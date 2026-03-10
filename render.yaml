@@ -1,0 +1,64 @@
+services:
+  # Main Web Application
+  - type: web
+    name: optimum-therapy-web
+    env: node
+    plan: pro # Included in Professional account
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_APP_URL
+        fromService:
+          type: web
+          name: optimum-therapy-web
+          property: host
+    autoDeploy: true
+    
+  # PostgreSQL Database
+  - type: pserv
+    name: optimum-therapy-db
+    env: postgresql
+    plan: pro # Enhanced performance for Professional account
+    disk:
+      name: optimum-therapy-data
+      size: 5GB # Larger storage for Professional account
+      
+  # Background Jobs for Sync and Reminders
+  - type: cron
+    name: email-reminders
+    env: node
+    schedule: "0 18 * * *" # Daily at 6 PM AST
+    buildCommand: npm install
+    startCommand: node scripts/email-reminders.js
+    
+  - type: cron
+    name: eod-sync
+    env: node  
+    schedule: "0 18 * * *" # Daily at 6 PM AST
+    buildCommand: npm install
+    startCommand: node scripts/eod-sync.js
+
+# Environment Variables (set in Render Dashboard)
+envVarGroups:
+  - name: database
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: optimum-therapy-db
+          property: connectionString
+          
+  - name: encryption
+    envVars:
+      - key: VITE_ENCRYPTION_KEY
+        generateValue: true
+        
+  - name: external-apis
+    envVars:
+      - key: VITE_RESEND_API_KEY
+        sync: false # Set manually in dashboard
+      - key: VITE_TWILIO_ACCOUNT_SID  
+        sync: false
+      - key: VITE_TWILIO_AUTH_TOKEN
+        sync: false
