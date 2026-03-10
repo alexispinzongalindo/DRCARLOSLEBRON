@@ -75,9 +75,46 @@ export interface Appointment {
 export interface SOAPNote {
   id?: string;
   encounter_id: string;
+  chief_complaint?: string;
   subjective_text?: string;
+  objective_text?: string;
   assessment_text?: string;
+  plan_text?: string;
   prognosis?: 'excellent' | 'good' | 'regular' | 'poor' | 'guarded';
+  // Objective structured fields
+  area_inspected?: string;
+  dx_imaging?: string;
+  posture_notes?: string;
+  palpation_notes?: string;
+  // Functional measures
+  tug_test_value?: string;
+  tug_test_notes?: string;
+  five_sit_stand_value?: string;
+  five_sit_stand_notes?: string;
+  // Gait
+  gait_description?: string;
+  gait_deviations?: string;
+  assistive_device?: string;
+  // Plan
+  frequency?: string;
+  duration?: string;
+  treatment_goals?: string;
+  cpt_codes_selected?: string;
+  created_at?: string;
+  updated_at?: string;
+  sync_status?: 'pending' | 'synced' | 'conflict';
+}
+
+export interface PatientDiagnosis {
+  id?: string;
+  encounter_id: string;
+  patient_id: string;
+  icd10_code: string;
+  description: string;
+  acuity: 'acute' | 'chronic' | 'active';
+  diag_type: 'current' | 'historical';
+  start_date?: string;
+  end_date?: string;
   created_at?: string;
   updated_at?: string;
   sync_status?: 'pending' | 'synced' | 'conflict';
@@ -251,6 +288,7 @@ export class OptimumTherapyDB extends Dexie {
   transfer_findings!: Table<TransferFinding>;
   grip_strength!: Table<GripStrength>;
   gait_findings!: Table<GaitFinding>;
+  patient_diagnoses!: Table<PatientDiagnosis>;
   icd10_codes!: Table<ICD10Code>;
   cpt_codes!: Table<CPTCode>;
   insurance_plans!: Table<InsurancePlan>;
@@ -274,6 +312,28 @@ export class OptimumTherapyDB extends Dexie {
       transfer_findings: '++id, encounter_id, transfer_type, sync_status',
       grip_strength: '++id, encounter_id, side, sync_status',
       gait_findings: '++id, encounter_id, sync_status',
+      icd10_codes: '++id, code, description, chapter',
+      cpt_codes: '++id, code, description, category',
+      insurance_plans: '++id, payer_name, payer_id',
+      sync_queue: '++id, table_name, record_id, operation, created_at',
+      audit_log: '++id, user_id, table_name, record_id, timestamp',
+      sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
+      time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status'
+    });
+
+    this.version(4).stores({
+      patients: '++id, mrn, first_name, last_name, dob, sync_status',
+      staff: '++id, user_id, first_name, last_name, role, email, sync_status',
+      encounters: '++id, patient_id, encounter_date, seen_by, status, sync_status',
+      appointments: '++id, patient_id, staff_id, appointment_date, start_time, status, sync_status',
+      soap_notes: '++id, encounter_id, sync_status',
+      mmt_findings: '++id, encounter_id, muscle_group, side, sync_status',
+      functional_measures: '++id, encounter_id, test_name, sync_status',
+      spasticity_findings: '++id, encounter_id, body_part, side, sync_status',
+      transfer_findings: '++id, encounter_id, transfer_type, sync_status',
+      grip_strength: '++id, encounter_id, side, sync_status',
+      gait_findings: '++id, encounter_id, sync_status',
+      patient_diagnoses: '++id, encounter_id, patient_id, icd10_code, diag_type, sync_status',
       icd10_codes: '++id, code, description, chapter',
       cpt_codes: '++id, code, description, category',
       insurance_plans: '++id, payer_name, payer_id',
