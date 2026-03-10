@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
 import { EnhancedSOAPForm } from './components/encounters/EnhancedSOAPForm';
+import { db } from './db/dexie';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PatientList } from './components/patients/PatientList';
@@ -12,7 +13,6 @@ import { InteractiveCalendar } from './components/appointments/InteractiveCalend
 import { AppointmentReminders } from './components/appointments/AppointmentReminders';
 import { TimeClock } from './components/timeclock/TimeClock';
 import { PatientDetail } from './components/patients/PatientDetail';
-import { db } from './db/dexie';
 import { seedDemoData } from './db/seedDemo';
 
 function App() {
@@ -144,9 +144,27 @@ function AppContent() {
             onEdit={() => setCurrentPage('edit-patient')}
             onClose={() => setCurrentPage('patients')}
             onScheduleAppointment={() => setCurrentPage('new-appointment')}
-            onCreateEncounter={() => {
-              // TODO: Create encounter and navigate to SOAP note
-              setCurrentPage('soap-note');
+            onCreateEncounter={async () => {
+              // Create encounter and navigate directly to evaluation form
+              try {
+                const newEncounter = {
+                  patient_id: selectedPatientId!,
+                  encounter_date: new Date().toISOString().split('T')[0],
+                  encounter_type: 'Physical Therapy Evaluation',
+                  seen_by: 'Dr. Carlos Lebron-Quiñones PT DPT',
+                  facility_id: 'main',
+                  note_type: 'evaluation',
+                  status: 'draft' as const,
+                  created_at: new Date().toISOString(),
+                  sync_status: 'pending' as const
+                };
+                
+                const encounterId = await db.encounters.add(newEncounter);
+                setSelectedEncounterId(encounterId.toString());
+                setCurrentPage('soap-note');
+              } catch (error) {
+                console.error('Error creating encounter:', error);
+              }
             }}
           />
         ) : (
