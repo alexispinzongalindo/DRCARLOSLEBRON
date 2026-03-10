@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../shared/Button';
+import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
 import { db } from '../../db/dexie';
 import { 
   COMPREHENSIVE_CPT_CODES as CPT_CODES, 
@@ -351,17 +352,23 @@ ${formData.treatmentGoals.map((g, i) => `${i + 1}. ${g.description} (${g.timefra
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Physical Therapy Evaluation</h1>
-            <p className="text-gray-600">
-              Patient: {patient?.first_name} {patient?.last_name} • 
-              Date: {encounter?.encounter_date}
-            </p>
+        <div className="flex justify-between items-start">
+          <div className="flex items-start space-x-6">
+            <OptimumTherapyLogo size="md" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Physical Therapy Evaluation</h1>
+              <p className="text-gray-600">
+                Patient: {patient?.first_name} {patient?.last_name} • 
+                Date: {encounter?.encounter_date}
+              </p>
+            </div>
           </div>
           <div className="text-right text-sm text-gray-600">
-            <p>Provider: Dr. Carlos Lebron-Quiñones PT DPT</p>
-            <p>NPI: 1477089696 • License: 4521</p>
+            <p className="font-medium">Dr. Carlos Lebron-Quiñones PT, DPT</p>
+            <p>NPI: 1477089696</p>
+            <p>939-457-6622</p>
+            <p>Carr. 107 km 2.2</p>
+            <p>Bo. Borinquen, Aguadilla, PR 00603</p>
           </div>
         </div>
       </div>

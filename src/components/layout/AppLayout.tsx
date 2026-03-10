@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
+import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -71,7 +72,7 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-gray-900">Optimum Therapy</h1>
+                <OptimumTherapyLogo size="sm" />
               </div>
               <nav className="hidden md:ml-6 md:flex md:space-x-8">
                 {[
