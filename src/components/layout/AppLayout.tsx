@@ -78,6 +78,8 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
                   { id: 'dashboard', label: 'Dashboard' },
                   { id: 'patients', label: 'Patients' },
                   { id: 'appointments', label: 'Appointments' },
+                  { id: 'time-clock', label: 'Time Clock' },
+                  { id: 'reminders', label: 'Reminders' },
                 ].map(item => (
                   <button
                     key={item.id}

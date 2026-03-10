@@ -8,6 +8,10 @@ import { PatientList } from './components/patients/PatientList';
 import { PatientRegistrationForm } from './components/patients/PatientRegistrationForm';
 import { AppointmentCalendar } from './components/appointments/AppointmentCalendar';
 import { AppointmentForm } from './components/appointments/AppointmentForm';
+import { InteractiveCalendar } from './components/appointments/InteractiveCalendar';
+import { AppointmentReminders } from './components/appointments/AppointmentReminders';
+import { TimeClock } from './components/timeclock/TimeClock';
+import { PatientDetail } from './components/patients/PatientDetail';
 import { db } from './db/dexie';
 import { seedDemoData } from './db/seedDemo';
 
@@ -65,6 +69,8 @@ function AppContent() {
   const { user } = useAuthStore();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
 
   if (!user) {
     return <LoginForm />;
@@ -75,7 +81,15 @@ function AppContent() {
       case 'patients':
         return <PatientList />;
       case 'appointments':
-        return <AppointmentCalendar />;
+        return (
+          <InteractiveCalendar
+            onNewAppointment={() => setCurrentPage('new-appointment')}
+            onEditAppointment={(appointmentId) => {
+              setSelectedAppointmentId(appointmentId);
+              setCurrentPage('edit-appointment');
+            }}
+          />
+        );
       case 'new-appointment':
         return (
           <AppointmentForm
@@ -84,6 +98,25 @@ function AppContent() {
               setCurrentPage('appointments');
             }}
             onCancel={() => setCurrentPage('appointments')}
+          />
+        );
+      case 'edit-appointment':
+        return selectedAppointmentId ? (
+          <AppointmentForm
+            existingAppointment={undefined} // TODO: Load appointment by ID
+            onSave={(appointment) => {
+              console.log('Appointment updated:', appointment);
+              setCurrentPage('appointments');
+            }}
+            onCancel={() => setCurrentPage('appointments')}
+          />
+        ) : (
+          <InteractiveCalendar
+            onNewAppointment={() => setCurrentPage('new-appointment')}
+            onEditAppointment={(appointmentId) => {
+              setSelectedAppointmentId(appointmentId);
+              setCurrentPage('edit-appointment');
+            }}
           />
         );
       case 'new-patient':
@@ -96,6 +129,38 @@ function AppContent() {
             onCancel={() => setCurrentPage('patients')}
           />
         );
+      case 'patient-detail':
+        return selectedPatientId ? (
+          <PatientDetail
+            patientId={selectedPatientId}
+            onEdit={() => setCurrentPage('edit-patient')}
+            onClose={() => setCurrentPage('patients')}
+            onScheduleAppointment={() => setCurrentPage('new-appointment')}
+            onCreateEncounter={() => {
+              // TODO: Create encounter and navigate to SOAP note
+              setCurrentPage('soap-note');
+            }}
+          />
+        ) : (
+          <PatientList />
+        );
+      case 'edit-patient':
+        return selectedPatientId ? (
+          <PatientRegistrationForm
+            existingPatient={undefined} // TODO: Load patient by ID
+            onSave={(patient) => {
+              console.log('Patient updated:', patient);
+              setCurrentPage('patient-detail');
+            }}
+            onCancel={() => setCurrentPage('patient-detail')}
+          />
+        ) : (
+          <PatientList />
+        );
+      case 'time-clock':
+        return <TimeClock />;
+      case 'reminders':
+        return <AppointmentReminders />;
       case 'soap-note':
         return selectedEncounterId ? (
           <SOAPNoteForm

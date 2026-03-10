@@ -223,6 +223,21 @@ export interface SyncLog {
   created_at?: string;
 }
 
+export interface TimeEntry {
+  id?: string;
+  staff_id: string;
+  clock_in: string;
+  clock_out?: string;
+  break_start?: string;
+  break_end?: string;
+  total_hours?: number;
+  date: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  sync_status?: 'pending' | 'synced' | 'conflict';
+}
+
 // Dexie database class
 export class OptimumTherapyDB extends Dexie {
   patients!: Table<Patient>;
@@ -242,11 +257,12 @@ export class OptimumTherapyDB extends Dexie {
   sync_queue!: Table<SyncQueue>;
   audit_log!: Table<AuditLog>;
   sync_log!: Table<SyncLog>;
+  time_entries!: Table<TimeEntry>;
 
   constructor() {
     super('OptimumTherapyDB');
     
-    this.version(2).stores({
+    this.version(3).stores({
       patients: '++id, mrn, first_name, last_name, dob, sync_status',
       staff: '++id, user_id, first_name, last_name, role, email, sync_status',
       encounters: '++id, patient_id, encounter_date, seen_by, status, sync_status',
@@ -263,7 +279,8 @@ export class OptimumTherapyDB extends Dexie {
       insurance_plans: '++id, payer_name, payer_id',
       sync_queue: '++id, table_name, record_id, operation, created_at',
       audit_log: '++id, user_id, table_name, record_id, timestamp',
-      sync_log: '++id, device_id, last_sync_at, sync_status, created_at'
+      sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
+      time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status'
     });
 
     // PHI encryption hooks disabled during testing - enable for go-live
