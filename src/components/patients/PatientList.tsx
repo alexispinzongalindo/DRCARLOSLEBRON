@@ -27,7 +27,6 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
       } else {
         results = await db.patients
           .filter(patient => !patient.is_deleted)
-          .reverse()
           .limit(50)
           .toArray();
       }

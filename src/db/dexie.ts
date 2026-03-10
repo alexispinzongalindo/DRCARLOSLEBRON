@@ -246,7 +246,7 @@ export class OptimumTherapyDB extends Dexie {
   constructor() {
     super('OptimumTherapyDB');
     
-    this.version(1).stores({
+    this.version(2).stores({
       patients: '++id, mrn, first_name, last_name, dob, sync_status',
       staff: '++id, user_id, first_name, last_name, role, email, sync_status',
       encounters: '++id, patient_id, encounter_date, seen_by, status, sync_status',
@@ -266,35 +266,30 @@ export class OptimumTherapyDB extends Dexie {
       sync_log: '++id, device_id, last_sync_at, sync_status, created_at'
     });
 
-    // Hooks for encryption/decryption and audit logging
-    this.patients.hook('creating', this.encryptPatientPHI);
-    this.patients.hook('updating', this.encryptPatientPHI);
-    this.patients.hook('reading', this.decryptPatientPHI);
+    // PHI encryption hooks disabled during testing - enable for go-live
+    // this.patients.hook('creating', this.encryptPatientPHI);
+    // this.patients.hook('updating', this.encryptPatientPHI);
+    // this.patients.hook('reading', this.decryptPatientPHI);
+    // this.soap_notes.hook('creating', this.encryptSOAPPHI);
+    // this.soap_notes.hook('updating', this.encryptSOAPPHI);
+    // this.soap_notes.hook('reading', this.decryptSOAPPHI);
+    // this.appointments.hook('creating', this.encryptAppointmentPHI);
+    // this.appointments.hook('updating', this.encryptAppointmentPHI);
+    // this.appointments.hook('reading', this.decryptAppointmentPHI);
+    // this.functional_measures.hook('creating', this.encryptFunctionalMeasurePHI);
+    // this.functional_measures.hook('updating', this.encryptFunctionalMeasurePHI);
+    // this.functional_measures.hook('reading', this.decryptFunctionalMeasurePHI);
 
-    this.soap_notes.hook('creating', this.encryptSOAPPHI);
-    this.soap_notes.hook('updating', this.encryptSOAPPHI);
-    this.soap_notes.hook('reading', this.decryptSOAPPHI);
-
-    this.appointments.hook('creating', this.encryptAppointmentPHI);
-    this.appointments.hook('updating', this.encryptAppointmentPHI);
-    this.appointments.hook('reading', this.decryptAppointmentPHI);
-
-    this.functional_measures.hook('creating', this.encryptFunctionalMeasurePHI);
-    this.functional_measures.hook('updating', this.encryptFunctionalMeasurePHI);
-    this.functional_measures.hook('reading', this.decryptFunctionalMeasurePHI);
-
-    // Add to sync queue on modifications
-    this.patients.hook('creating', this.addToSyncQueue('patients', 'create'));
-    this.patients.hook('updating', this.addToSyncQueue('patients', 'update'));
-    this.patients.hook('deleting', this.addToSyncQueue('patients', 'delete'));
-
-    this.encounters.hook('creating', this.addToSyncQueue('encounters', 'create'));
-    this.encounters.hook('updating', this.addToSyncQueue('encounters', 'update'));
-    this.encounters.hook('deleting', this.addToSyncQueue('encounters', 'delete'));
-
-    this.appointments.hook('creating', this.addToSyncQueue('appointments', 'create'));
-    this.appointments.hook('updating', this.addToSyncQueue('appointments', 'update'));
-    this.appointments.hook('deleting', this.addToSyncQueue('appointments', 'delete'));
+    // Sync queue hooks disabled during testing - enable for go-live
+    // this.patients.hook('creating', this.addToSyncQueue('patients', 'create'));
+    // this.patients.hook('updating', this.addToSyncQueue('patients', 'update'));
+    // this.patients.hook('deleting', this.addToSyncQueue('patients', 'delete'));
+    // this.encounters.hook('creating', this.addToSyncQueue('encounters', 'create'));
+    // this.encounters.hook('updating', this.addToSyncQueue('encounters', 'update'));
+    // this.encounters.hook('deleting', this.addToSyncQueue('encounters', 'delete'));
+    // this.appointments.hook('creating', this.addToSyncQueue('appointments', 'create'));
+    // this.appointments.hook('updating', this.addToSyncQueue('appointments', 'update'));
+    // this.appointments.hook('deleting', this.addToSyncQueue('appointments', 'delete'));
   }
 
   // PHI encryption hooks
