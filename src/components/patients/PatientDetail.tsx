@@ -288,7 +288,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                           </div>
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatDate(item.created_at || '')}
+                          {formatDate(item.created_at)}
                         </div>
                       </div>
                     ))}
