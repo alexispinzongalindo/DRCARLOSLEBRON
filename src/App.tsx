@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
-import { SOAPNoteForm } from './components/encounters/SOAPNoteFormSimple';
+import { EnhancedSOAPForm } from './components/encounters/EnhancedSOAPForm';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PatientList } from './components/patients/PatientList';
@@ -171,7 +171,7 @@ function AppContent() {
         return <AppointmentReminders />;
       case 'soap-note':
         return selectedEncounterId ? (
-          <SOAPNoteForm
+          <EnhancedSOAPForm
             encounterId={selectedEncounterId}
             onSave={() => setCurrentPage('dashboard')}
             onCancel={() => setCurrentPage('dashboard')}
