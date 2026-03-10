@@ -387,7 +387,7 @@ class SyncEngine {
       last_sync_at: new Date().toISOString(),
       records_pushed: recordsPushed,
       records_pulled: recordsPulled,
-      sync_status: errors.length === 0 ? 'completed' : 'failed',
+      sync_status: (errors.length === 0 ? 'completed' : 'failed') as 'pending' | 'completed' | 'failed',
       errors: errors.length > 0 ? errors.join('; ') : undefined
     };
 
