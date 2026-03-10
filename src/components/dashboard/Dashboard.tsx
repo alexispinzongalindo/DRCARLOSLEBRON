@@ -5,11 +5,19 @@ import { Button } from '../shared/Button';
 import { formatDate, formatTime } from '../../lib/utils';
 import type { Patient, Appointment, Encounter } from '../../db/dexie';
 
+interface AppointmentWithPatient extends Appointment {
+  patientName?: string;
+}
+
+interface EncounterWithPatient extends Encounter {
+  patientName?: string;
+}
+
 export function Dashboard() {
   const { staff } = useAuthStore();
-  const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([]);
+  const [todaysAppointments, setTodaysAppointments] = useState<AppointmentWithPatient[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
-  const [pendingNotes, setPendingNotes] = useState<Encounter[]>([]);
+  const [pendingNotes, setPendingNotes] = useState<EncounterWithPatient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -17,27 +25,42 @@ export function Dashboard() {
       try {
         const today = new Date().toISOString().split('T')[0];
         
-        // Load today's appointments
+        // Load today's appointments with patient names
         const appointments = await db.getAppointmentsByDate(today);
-        setTodaysAppointments(appointments);
+        const aptsWithNames: AppointmentWithPatient[] = await Promise.all(
+          appointments.map(async (apt) => {
+            const patient = apt.patient_id ? await db.patients.get(apt.patient_id) : undefined;
+            return {
+              ...apt,
+              patientName: patient ? `${patient.first_name} ${patient.last_name}` : 'Unknown Patient'
+            };
+          })
+        );
+        setTodaysAppointments(aptsWithNames);
 
-        // Load recent patients (last 10)
+        // Load recent patients
         const patients = await db.patients
-          .orderBy('updated_at')
-          .reverse()
+          .filter(p => !p.is_deleted)
           .limit(10)
           .toArray();
         setRecentPatients(patients);
 
-        // Load pending notes for therapists
+        // Load pending notes
         if (staff?.role === 'therapist' || staff?.role === 'admin') {
           const encounters = await db.encounters
-            .where('status')
-            .equals('draft')
-            .and(encounter => staff.role === 'admin' || encounter.seen_by === staff.id)
+            .filter(enc => enc.status === 'draft')
             .limit(10)
             .toArray();
-          setPendingNotes(encounters);
+          const encsWithNames: EncounterWithPatient[] = await Promise.all(
+            encounters.map(async (enc) => {
+              const patient = enc.patient_id ? await db.patients.get(enc.patient_id) : undefined;
+              return {
+                ...enc,
+                patientName: patient ? `${patient.first_name} ${patient.last_name}` : 'Unknown Patient'
+              };
+            })
+          );
+          setPendingNotes(encsWithNames);
         }
 
         setIsLoading(false);
@@ -179,9 +202,9 @@ export function Dashboard() {
                 {todaysAppointments.slice(0, 5).map((appointment) => (
                   <div key={appointment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">Patient #{appointment.patient_id?.slice(-6)}</p>
+                      <p className="font-medium text-gray-900">{appointment.patientName}</p>
                       <p className="text-sm text-gray-600">
-                        {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
+                        {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)} • {appointment.type}
                       </p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAppointmentStatusColor(appointment.status)}`}>
@@ -208,7 +231,7 @@ export function Dashboard() {
                   {pendingNotes.slice(0, 5).map((encounter) => (
                     <div key={encounter.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">Patient #{encounter.patient_id?.slice(-6)}</p>
+                        <p className="font-medium text-gray-900">{encounter.patientName}</p>
                         <p className="text-sm text-gray-600">
                           {formatDate(encounter.encounter_date)} • {encounter.encounter_type}
                         </p>
@@ -225,7 +248,7 @@ export function Dashboard() {
         )}
 
         {/* Recent Patients - Show for front desk */}
-        {staff?.role === 'front_desk' && (
+        {(staff?.role === 'front_desk' || staff?.role === 'admin') && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">Recent Patients</h3>
