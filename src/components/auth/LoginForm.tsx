@@ -96,6 +96,74 @@ export function LoginForm() {
           </div>
         </form>
 
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-gray-50 text-gray-500">Or use demo account</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={async () => {
+              setError('');
+              const result = await signIn('carlos@optimumtherapy.pr', 'demo');
+              if (!result.success) setError(result.error || 'Demo login failed');
+            }}
+            className="w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">CL</div>
+              <div className="text-left">
+                <div className="font-medium text-gray-900">Dr. Carlos Lebron</div>
+                <div className="text-gray-500 text-xs">Admin</div>
+              </div>
+            </div>
+            <span className="text-blue-600 text-xs font-medium">Login →</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setError('');
+              const result = await signIn('maria@optimumtherapy.pr', 'demo');
+              if (!result.success) setError(result.error || 'Demo login failed');
+            }}
+            className="w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs">MR</div>
+              <div className="text-left">
+                <div className="font-medium text-gray-900">Maria Rodriguez</div>
+                <div className="text-gray-500 text-xs">Therapist</div>
+              </div>
+            </div>
+            <span className="text-blue-600 text-xs font-medium">Login →</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setError('');
+              const result = await signIn('ana@optimumtherapy.pr', 'demo');
+              if (!result.success) setError(result.error || 'Demo login failed');
+            }}
+            className="w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-xs">AM</div>
+              <div className="text-left">
+                <div className="font-medium text-gray-900">Ana Martinez</div>
+                <div className="text-gray-500 text-xs">Front Desk</div>
+              </div>
+            </div>
+            <span className="text-blue-600 text-xs font-medium">Login →</span>
+          </button>
+        </div>
+
         <div className="text-center">
           <p className="text-xs text-gray-500">
             HIPAA Compliant • Offline-First • Secure

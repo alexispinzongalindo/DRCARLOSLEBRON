@@ -4,6 +4,7 @@ import { LoginForm } from './components/auth/LoginForm';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { db } from './db/dexie';
+import { seedDemoData } from './db/seedDemo';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -13,6 +14,7 @@ function App() {
     const initializeApp = async () => {
       try {
         await db.open();
+        await seedDemoData();
         await useAuthStore.getState().checkSession();
         setIsInitialized(true);
       } catch (error: any) {
