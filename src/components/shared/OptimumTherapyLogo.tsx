@@ -8,18 +8,17 @@ interface OptimumTherapyLogoProps {
 
 export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumTherapyLogoProps) {
   const sizeMap = {
-    sm: { height: 48 },
-    md: { height: 64 },
-    lg: { height: 80 }
+    sm: { height: 56 },
+    md: { height: 80 },
+    lg: { height: 110 }
   };
 
   return (
-    <img 
+    <img
       src={logoImage}
       alt="Optimum Therapy"
-      height={sizeMap[size].height}
       className={className}
-      style={{ height: `${sizeMap[size].height}px`, width: 'auto', objectFit: 'contain' }}
+      style={{ height: `${sizeMap[size].height}px`, width: 'auto', objectFit: 'contain', maxWidth: '100%' }}
     />
   );
 }
