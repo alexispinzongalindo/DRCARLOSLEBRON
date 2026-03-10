@@ -173,13 +173,17 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
   useEffect(() => {
     const load = async () => {
       try {
-        const enc = await db.encounters.get(encounterId);
+        // IndexedDB ++id keys are numbers; normalize string IDs before lookups
+        const eid: string | number = isNaN(Number(encounterId)) ? encounterId : Number(encounterId);
+
+        const enc = await db.encounters.get(eid);
         if (!enc) throw new Error('Encounter not found');
         setEncounter(enc);
-        const pat = await db.patients.get(enc.patient_id);
+        const pid: string | number = isNaN(Number(enc.patient_id)) ? enc.patient_id : Number(enc.patient_id);
+        const pat = await db.patients.get(pid);
         setPatient(pat || null);
 
-        const note = await db.soap_notes.where('encounter_id').equals(encounterId).first();
+        const note = await db.soap_notes.where('encounter_id').equals(eid).first();
         if (note) {
           setSoapNoteId(note.id);
           setChiefComplaint(note.chief_complaint || '#1 PT Evaluation and Tx');
@@ -203,7 +207,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           if (note.cpt_codes_selected) setSelectedCPTCodes(JSON.parse(note.cpt_codes_selected));
         }
 
-        const existingDiag = await db.patient_diagnoses.where('encounter_id').equals(encounterId).toArray();
+        const existingDiag = await db.patient_diagnoses.where('encounter_id').equals(eid).toArray();
         if (existingDiag.length > 0) {
           setDiagnoses(existingDiag.map(d => ({
             icd10_code: d.icd10_code,
@@ -215,7 +219,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           })));
         }
 
-        const existingMmt = await db.mmt_findings.where('encounter_id').equals(encounterId).toArray();
+        const existingMmt = await db.mmt_findings.where('encounter_id').equals(eid).toArray();
         if (existingMmt.length > 0) {
           const map: Record<string, MMTRow> = { ...mmtData };
           for (const m of existingMmt) {
@@ -233,17 +237,17 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           setMmtData(map);
         }
 
-        const existingSpas = await db.spasticity_findings.where('encounter_id').equals(encounterId).toArray();
+        const existingSpas = await db.spasticity_findings.where('encounter_id').equals(eid).toArray();
         if (existingSpas.length > 0) {
           setSpasticity(existingSpas.map(s => ({ body_part: s.body_part, ashworth_grade: s.ashworth_grade, side: s.side })));
         }
 
-        const existingTrans = await db.transfer_findings.where('encounter_id').equals(encounterId).toArray();
+        const existingTrans = await db.transfer_findings.where('encounter_id').equals(eid).toArray();
         if (existingTrans.length > 0) {
           setTransfers(existingTrans.map(t => ({ transfer_type: t.transfer_type, eval_level: t.eval_level || '', reval_level: t.reval_level || '' })));
         }
 
-        const existingGrip = await db.grip_strength.where('encounter_id').equals(encounterId).toArray();
+        const existingGrip = await db.grip_strength.where('encounter_id').equals(eid).toArray();
         for (const g of existingGrip) {
           if (g.side === 'L') setGripLeft(g.eval_lbs != null ? String(g.eval_lbs) : '');
           if (g.side === 'R') setGripRight(g.eval_lbs != null ? String(g.eval_lbs) : '');
@@ -261,6 +265,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
   const handleSave = async (sign = false) => {
     if (!encounter || !patient) return;
     setIsSaving(true);
+    const eid: string | number = isNaN(Number(encounterId)) ? encounterId : Number(encounterId);
     try {
       const now = new Date().toISOString();
 
@@ -292,7 +297,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       ].filter(Boolean).join('\n\n');
 
       const soapData: Partial<SOAPNote> = {
-        encounter_id: encounterId,
+        encounter_id: eid as string,
         chief_complaint: chiefComplaint,
         subjective_text: subjective,
         objective_text: objectiveText,
@@ -325,10 +330,10 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       }
 
       // Save diagnoses (clear + re-save)
-      await db.patient_diagnoses.where('encounter_id').equals(encounterId).delete();
+      await db.patient_diagnoses.where('encounter_id').equals(eid).delete();
       for (const d of diagnoses) {
         await db.patient_diagnoses.add({
-          encounter_id: encounterId,
+          encounter_id: eid as string,
           patient_id: patient.id!,
           icd10_code: d.icd10_code,
           description: d.description,
@@ -343,7 +348,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       }
 
       // Save MMT findings (clear + re-save)
-      await db.mmt_findings.where('encounter_id').equals(encounterId).delete();
+      await db.mmt_findings.where('encounter_id').equals(eid).delete();
       for (const g of MMT_MUSCLE_GROUPS) {
         const row = mmtData[g.name];
         for (const side of ['R', 'L'] as const) {
@@ -352,7 +357,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           if (mmt) {
             const mmtNum = parseFloat(mmt.replace('/5', ''));
             await db.mmt_findings.add({
-              encounter_id: encounterId,
+              encounter_id: eid as string,
               muscle_group: g.name,
               nerve_root: g.nerve,
               side,
@@ -367,11 +372,11 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       }
 
       // Save spasticity (clear + re-save)
-      await db.spasticity_findings.where('encounter_id').equals(encounterId).delete();
+      await db.spasticity_findings.where('encounter_id').equals(eid).delete();
       for (const s of spasticity) {
         if (s.body_part) {
           await db.spasticity_findings.add({
-            encounter_id: encounterId,
+            encounter_id: eid as string,
             body_part: s.body_part,
             ashworth_grade: s.ashworth_grade as any,
             side: s.side,
@@ -383,11 +388,11 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       }
 
       // Save transfers (clear + re-save)
-      await db.transfer_findings.where('encounter_id').equals(encounterId).delete();
+      await db.transfer_findings.where('encounter_id').equals(eid).delete();
       for (const t of transfers) {
         if (t.eval_level || t.reval_level) {
           await db.transfer_findings.add({
-            encounter_id: encounterId,
+            encounter_id: eid as string,
             transfer_type: t.transfer_type,
             eval_level: t.eval_level,
             reval_level: t.reval_level,
@@ -399,13 +404,13 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       }
 
       // Save grip strength
-      await db.grip_strength.where('encounter_id').equals(encounterId).delete();
-      if (gripLeft) await db.grip_strength.add({ encounter_id: encounterId, side: 'L', eval_lbs: parseFloat(gripLeft), created_at: now, updated_at: now, sync_status: 'pending' });
-      if (gripRight) await db.grip_strength.add({ encounter_id: encounterId, side: 'R', eval_lbs: parseFloat(gripRight), created_at: now, updated_at: now, sync_status: 'pending' });
+      await db.grip_strength.where('encounter_id').equals(eid).delete();
+      if (gripLeft) await db.grip_strength.add({ encounter_id: eid as string, side: 'L', eval_lbs: parseFloat(gripLeft), created_at: now, updated_at: now, sync_status: 'pending' });
+      if (gripRight) await db.grip_strength.add({ encounter_id: eid as string, side: 'R', eval_lbs: parseFloat(gripRight), created_at: now, updated_at: now, sync_status: 'pending' });
 
       // Update encounter status
       if (sign) {
-        await db.encounters.update(encounterId, {
+        await db.encounters.update(eid, {
           status: 'signed',
           signed_by: staff?.id,
           signed_at: now,
@@ -413,7 +418,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
         });
       }
 
-      await db.logAudit('update', 'soap_notes', encounterId);
+      await db.logAudit('update', 'soap_notes', String(eid));
       onSave();
     } catch (err) {
       console.error('Error saving SOAP note:', err);
