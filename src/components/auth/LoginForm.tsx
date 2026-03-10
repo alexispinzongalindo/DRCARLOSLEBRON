@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
 import { cn } from '../../lib/utils';
+import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -28,16 +29,9 @@ export function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
-            <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Optimum Therapy
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+        <div className="flex flex-col items-center">
+          <OptimumTherapyLogo size="lg" />
+          <p className="mt-4 text-center text-sm text-gray-600">
             Physical Therapy Practice Management System
           </p>
         </div>
