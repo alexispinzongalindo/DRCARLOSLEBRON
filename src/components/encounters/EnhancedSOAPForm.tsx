@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../shared/Button';
 import { db } from '../../db/dexie';
 import { 
-  CPT_CODES, 
-  ICD10_CODES, 
+  COMPREHENSIVE_CPT_CODES as CPT_CODES, 
+  COMPREHENSIVE_ICD10_CODES as ICD10_CODES, 
+  ASSESSMENT_TOOLS,
+  COMPREHENSIVE_GOAL_TEMPLATES,
+  type CPTCode,
+  type ICD10Code,
+  type ExerciseProtocol
+} from '../../data/comprehensiveClinicalCodes';
+import { 
   FUNCTIONAL_TESTS, 
   MMT_GRADES, 
   ASHWORTH_SCALE, 
   BODY_PARTS, 
   TRANSFER_TYPES, 
-  INDEPENDENCE_LEVELS,
-  GOAL_TEMPLATES,
-  type CPTCode,
-  type ICD10Code,
-  type ExerciseProtocol
+  INDEPENDENCE_LEVELS
 } from '../../data/clinicalCodes';
 import type { SOAPNote, Encounter, Patient } from '../../db/dexie';
 
@@ -229,7 +232,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
     }));
   };
 
-  const addTreatmentGoal = (template: typeof GOAL_TEMPLATES[0]) => {
+  const addTreatmentGoal = (template: any) => {
     setFormData(prev => ({
       ...prev,
       treatmentGoals: [...prev.treatmentGoals, {
@@ -634,7 +637,7 @@ ${formData.treatmentGoals.map((g, i) => `${i + 1}. ${g.description} (${g.timefra
         </div>
         
         <div className="space-y-3 mb-4">
-          {GOAL_TEMPLATES.map((template, index) => (
+          {Object.values(COMPREHENSIVE_GOAL_TEMPLATES).flat().map((template, index) => (
             <button
               key={index}
               onClick={() => addTreatmentGoal(template)}
