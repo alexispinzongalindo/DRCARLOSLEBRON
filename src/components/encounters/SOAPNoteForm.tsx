@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
 import { formatDate } from '../../lib/utils';
-import type { Encounter, SOAPNote, Patient, Staff } from '../../db/dexie';
+import type { Patient, Encounter, SOAPNote } from '../../db/dexie';
 
 interface SOAPNoteFormProps {
   encounterId: string;
@@ -82,16 +82,16 @@ const TRANSFER_TYPES = [
   'Other'
 ];
 
-const ASSIST_LEVELS = [
-  'Independent',
-  'Modified Independent',
-  'Supervision',
-  'Min Assist',
-  'Mod Assist',
-  'Max Assist',
-  'Dependent',
-  'Unable'
-];
+// const ASSIST_LEVELS = [
+//   'Independent',
+//   'Modified Independent',
+//   'Supervision',
+//   'Min Assist',
+//   'Mod Assist',
+//   'Max Assist',
+//   'Dependent',
+//   'Unable'
+// ];
 
 const ASHWORTH_GRADES = [
   { value: '0', label: '0 - No increase in muscle tone' },
@@ -113,7 +113,10 @@ const GAIT_DEVIATIONS = [
   'Wide base',
   'Toe walking',
   'Decreased arm swing',
-  'Other'
+  'Ataxic',
+  'Festinating',
+  'Hemiplegic',
+  'Parkinsonian'
 ];
 
 export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProps) {
