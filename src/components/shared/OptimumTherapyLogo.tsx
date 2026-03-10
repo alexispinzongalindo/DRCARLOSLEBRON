@@ -14,7 +14,7 @@ export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumThera
 
   return (
     <img 
-      src="/optimum-therapy-logo.png" 
+      src="/optimum-therapy-logo-final.png" 
       alt="Optimum Therapy" 
       className={`${sizeClasses[size]} w-auto ${className}`}
       style={{ objectFit: 'contain' }}
