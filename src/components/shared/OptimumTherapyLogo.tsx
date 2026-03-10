@@ -7,22 +7,18 @@ interface OptimumTherapyLogoProps {
 
 export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumTherapyLogoProps) {
   const sizeClasses = {
-    sm: 'h-16 w-48',
-    md: 'h-20 w-60', 
-    lg: 'h-24 w-72'
+    sm: 'text-xl font-bold',
+    md: 'text-2xl font-bold', 
+    lg: 'text-3xl font-bold'
   };
 
   return (
-    <img 
-      src="/optimum-therapy-logo-final.png" 
-      alt="Optimum Therapy" 
-      className={`${sizeClasses[size]} ${className}`}
-      style={{ objectFit: 'contain' }}
-      onError={(e) => {
-        console.error('Logo failed to load:', e);
-        // Fallback to original logo
-        (e.target as HTMLImageElement).src = '/optimum-therapy-logo.png';
-      }}
-    />
+    <div className={`${sizeClasses[size]} ${className} flex items-center space-x-2`}>
+      <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center">
+        <div className="w-4 h-4 bg-white rounded-full"></div>
+      </div>
+      <span className="text-teal-600">OPTIMUM</span>
+      <span className="text-yellow-500">THERAPY</span>
+    </div>
   );
 }
