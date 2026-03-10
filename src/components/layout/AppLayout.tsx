@@ -5,10 +5,12 @@ import { Button } from '../shared/Button';
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  currentPage?: string;
+  onNavigate?: (page: string) => void;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
-  const { user, staff, signOut, updateLastActivity, isSessionExpired } = useAuthStore();
+export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: AppLayoutProps) {
+  const { staff, signOut, updateLastActivity, isSessionExpired } = useAuthStore();
   const [syncStatus, setSyncStatus] = useState<'synced' | 'pending' | 'offline'>('synced');
   const [syncCount, setSyncCount] = useState(0);
 
@@ -72,23 +74,23 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <h1 className="text-xl font-bold text-gray-900">Optimum Therapy</h1>
               </div>
               <nav className="hidden md:ml-6 md:flex md:space-x-8">
-                <a href="#dashboard" className="text-gray-900 hover:text-gray-700 px-3 py-2 text-sm font-medium">
-                  Dashboard
-                </a>
-                <a href="#patients" className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">
-                  Patients
-                </a>
-                <a href="#appointments" className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">
-                  Appointments
-                </a>
-                <a href="#encounters" className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">
-                  Encounters
-                </a>
-                {staff?.role === 'admin' && (
-                  <a href="#staff" className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">
-                    Staff
-                  </a>
-                )}
+                {[
+                  { id: 'dashboard', label: 'Dashboard' },
+                  { id: 'patients', label: 'Patients' },
+                  { id: 'appointments', label: 'Appointments' },
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate?.(item.id)}
+                    className={`px-3 py-2 text-sm font-medium border-b-2 ${
+                      currentPage === item.id
+                        ? 'text-blue-600 border-blue-600'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </nav>
             </div>
 

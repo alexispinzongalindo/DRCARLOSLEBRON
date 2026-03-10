@@ -3,6 +3,8 @@ import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
+import { PatientList } from './components/patients/PatientList';
+import { AppointmentCalendar } from './components/appointments/AppointmentCalendar';
 import { db } from './db/dexie';
 import { seedDemoData } from './db/seedDemo';
 
@@ -58,14 +60,27 @@ function App() {
 
 function AppContent() {
   const { user } = useAuthStore();
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
   if (!user) {
     return <LoginForm />;
   }
 
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'patients':
+        return <PatientList />;
+      case 'appointments':
+        return <AppointmentCalendar />;
+      case 'dashboard':
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <AppLayout>
-      <Dashboard />
+    <AppLayout currentPage={currentPage} onNavigate={setCurrentPage}>
+      {renderPage()}
     </AppLayout>
   );
 }
