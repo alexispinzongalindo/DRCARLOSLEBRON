@@ -7,9 +7,9 @@ interface OptimumTherapyLogoProps {
 
 export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumTherapyLogoProps) {
   const sizeClasses = {
-    sm: 'w-32 h-12',
-    md: 'w-48 h-20',
-    lg: 'w-64 h-24'
+    sm: 'w-48 h-20',
+    md: 'w-64 h-24',
+    lg: 'w-80 h-32'
   };
 
   return (
