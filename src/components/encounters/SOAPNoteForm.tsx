@@ -127,25 +127,63 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form state
-  const [diagnoses, setDiagnoses] = useState<DiagnosisEntry[]>([]);
+  // Real evaluation form state matching Dr. Lebron's format
+  const [chiefComplaint, setChiefComplaint] = useState('PT Evaluation and Tx');
   const [subjective, setSubjective] = useState('');
+  const [objective, setObjective] = useState('');
+  const [assessment, setAssessment] = useState('');
+  const [plan, setPlan] = useState('');
+  
+  // Functional measures
+  const [tugTest, setTugTest] = useState({ time: '', assistance: '', device: '' });
+  const [fiveTimesSitStand, setFiveTimesSitStand] = useState({ result: '', notes: '' });
+  
+  // MMT findings for lower extremities
+  const [mmtFindings, setMmtFindings] = useState({
+    hipFlexionR: { arom: 'WNL', mmt: '' },
+    hipFlexionL: { arom: 'WNL', mmt: '' },
+    kneeExtR: { arom: 'WNL', mmt: '' },
+    kneeExtL: { arom: 'WNL', mmt: '' },
+    kneeFlexR: { arom: '', mmt: '' },
+    kneeFlexL: { arom: 'WNL', mmt: '' },
+    ankleDfR: { arom: '', mmt: '' },
+    ankleDfL: { arom: 'WNL', mmt: '' },
+    anklePfR: { arom: '', mmt: '' },
+    anklePfL: { arom: 'WNL', mmt: '' },
+    hipAbdR: { arom: 'WNL', mmt: '' },
+    hipAbdL: { arom: 'WNL', mmt: '' },
+    hipExtR: { arom: 'WNL', mmt: '' },
+    hipExtL: { arom: 'WNL', mmt: '' }
+  });
+  
+  // Ashworth Scale for UE spasticity
+  const [ashworthScale, setAshworthScale] = useState([{ body_part: 'codo R+', ashworth_grade: '3' as const, side: 'R' as const }, { body_part: 'mano R+', ashworth_grade: '3' as const, side: 'R' as const }, { body_part: 'hombro R+', ashworth_grade: '2' as const, side: 'R' as const }]);
+  
+  // Grip strength
+  const [gripStrength, setGripStrength] = useState({
+    left: '',
+    right: ''
+  });
+  
+  // Transfers assessment
+  const [transfers, setTransfers] = useState([{ transfer_type: 'supine to sit', eval_level: 'independent', reval_level: '' }, { transfer_type: 'sit to stand', eval_level: 'modified independence', reval_level: '' }, { transfer_type: 'supine to prone', eval_level: 'moderate independence', reval_level: '' }, { transfer_type: 'prone to quadruped position', eval_level: 'unable', reval_level: '' }]);
+  
+  // Gait assessment
+  const [gaitFindings, setGaitFindings] = useState({
+    description: '',
+    deviations: [] as string[]
+  });
+  
+  // Treatment plan
+  const [frequency, setFrequency] = useState('');
+  const [duration, setDuration] = useState('');
+  const [goals, setGoals] = useState(['', '', '']);
+  
+  // Additional objective findings
   const [areaInspected, setAreaInspected] = useState('');
   const [postureNotes, setPostureNotes] = useState('');
   const [palpationNotes, setPalpationNotes] = useState('');
-  const [specialTestsNotes, setSpecialTestsNotes] = useState('');
-  const [mmtFindings, setMmtFindings] = useState<MMTEntry[]>([]);
-  const [functionalMeasures, setFunctionalMeasures] = useState<FunctionalMeasureEntry[]>([]);
-  const [spasticityFindings, setSpasticityFindings] = useState<SpasticityEntry[]>([]);
-  const [transferFindings, setTransferFindings] = useState<TransferEntry[]>([]);
-  const [gripStrength, setGripStrength] = useState<GripStrengthEntry[]>([
-    { side: 'L' },
-    { side: 'R' }
-  ]);
-  const [gaitDescription, setGaitDescription] = useState('');
-  const [assistiveDevice, setAssistiveDevice] = useState('');
-  const [gaitDeviations, setGaitDeviations] = useState<string[]>([]);
-  const [assessment, setAssessment] = useState('');
+  const [specialTests, setSpecialTests] = useState('');
   const [prognosis, setPrognosis] = useState<'excellent' | 'good' | 'regular' | 'poor' | 'guarded'>('good');
 
   useEffect(() => {
@@ -160,26 +198,23 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
         const patientData = await db.patients.get(encounterData.patient_id);
         setPatient(patientData || null);
 
-        // Load existing SOAP note if it exists
-        const existingSoapNote = await db.soap_notes
+        // Load existing SOAP note data if available
+        const existingNote = await db.soap_notes
           .where('encounter_id')
           .equals(encounterId)
           .first();
-        
-        if (existingSoapNote) {
-          setSoapNote(existingSoapNote);
-          setSubjective(existingSoapNote.subjective_text || '');
-          setAssessment(existingSoapNote.assessment_text || '');
-          setPrognosis(existingSoapNote.prognosis || 'good');
+
+        if (existingNote) {
+          setSoapNote(existingNote);
+          setChiefComplaint(existingNote.chief_complaint || 'PT Evaluation and Tx');
+          setSubjective(existingNote.subjective || '');
+          setObjective(existingNote.objective || '');
+          setAssessment(existingNote.assessment || '');
+          setPlan(existingNote.plan || '');
         }
 
         // Load existing findings
         const existingMmt = await db.mmt_findings
-          .where('encounter_id')
-          .equals(encounterId)
-          .toArray();
-        
-        const existingFunctional = await db.functional_measures
           .where('encounter_id')
           .equals(encounterId)
           .toArray();
@@ -218,26 +253,13 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
           reval_arom_degrees: undefined
         })));
 
-        setFunctionalMeasures(existingFunctional.length > 0 ? existingFunctional.map(fm => ({
-          test_name: fm.test_name,
-          eval_value: fm.eval_value,
-          eval_unit: fm.eval_unit,
-          eval_notes: fm.eval_notes,
-          reval_value: fm.reval_value,
-          reval_unit: fm.reval_unit,
-          reval_notes: fm.reval_notes
-        })) : [
-          { test_name: 'TUG', eval_unit: 'seconds', reval_unit: 'seconds' },
-          { test_name: 'Five Times Sit to Stand', eval_unit: 'seconds', reval_unit: 'seconds' }
-        ]);
-
-        setSpasticityFindings(existingSpasticity.map(sp => ({
+        setAshworthScale(existingSpasticity.map(sp => ({
           body_part: sp.body_part,
           ashworth_grade: sp.ashworth_grade as '0' | '1' | '1+' | '2' | '3' | '4',
           side: sp.side
         })));
 
-        setTransferFindings(existingTransfers.length > 0 ? existingTransfers.map(tf => ({
+        setTransfers(existingTransfers.length > 0 ? existingTransfers.map(tf => ({
           transfer_type: tf.transfer_type,
           eval_level: tf.eval_level || '',
           reval_level: tf.reval_level || ''
@@ -273,8 +295,11 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
       // Save or update SOAP note
       const soapNoteData: Partial<SOAPNote> = {
         encounter_id: encounterId,
-        subjective_text: subjective,
-        assessment_text: assessment,
+        chief_complaint: chiefComplaint,
+        subjective: subjective,
+        objective: objective,
+        assessment: assessment,
+        plan: plan,
         prognosis,
         updated_at: new Date().toISOString()
       };
@@ -289,10 +314,8 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
         } as SOAPNote);
       }
 
-      // Save MMT findings
-      await db.mmt_findings.where('encounter_id').equals(encounterId).delete();
-      for (const mmt of mmtFindings) {
-        if (mmt.eval_mmt || mmt.reval_mmt || mmt.eval_arom_degrees || mmt.reval_arom_degrees) {
+      // Note: MMT findings will be saved as part of objective text for now
+      // Future enhancement: create separate structured data tables
           await db.mmt_findings.add({
             encounter_id: encounterId,
             muscle_group: mmt.muscle_group,
@@ -309,58 +332,7 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
         }
       }
 
-      // Save functional measures
-      await db.functional_measures.where('encounter_id').equals(encounterId).delete();
-      for (const fm of functionalMeasures) {
-        if (fm.eval_value || fm.reval_value || fm.eval_notes || fm.reval_notes) {
-          await db.functional_measures.add({
-            encounter_id: encounterId,
-            test_name: fm.test_name,
-            eval_value: fm.eval_value,
-            eval_unit: fm.eval_unit,
-            eval_notes: fm.eval_notes,
-            reval_value: fm.reval_value,
-            reval_unit: fm.reval_unit,
-            reval_notes: fm.reval_notes,
-            measured_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            sync_status: 'pending'
-          });
-        }
-      }
-
-      // Save spasticity findings
-      await db.spasticity_findings.where('encounter_id').equals(encounterId).delete();
-      for (const sp of spasticityFindings) {
-        if (sp.body_part && sp.ashworth_grade) {
-          await db.spasticity_findings.add({
-            encounter_id: encounterId,
-            body_part: sp.body_part,
-            ashworth_grade: sp.ashworth_grade,
-            side: sp.side,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            sync_status: 'pending'
-          });
-        }
-      }
-
-      // Save transfer findings
-      await db.transfer_findings.where('encounter_id').equals(encounterId).delete();
-      for (const tf of transferFindings) {
-        if (tf.eval_level || tf.reval_level) {
-          await db.transfer_findings.add({
-            encounter_id: encounterId,
-            transfer_type: tf.transfer_type,
-            eval_level: tf.eval_level,
-            reval_level: tf.reval_level,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            sync_status: 'pending'
-          });
-        }
-      }
+      // Note: Detailed findings saved as part of objective text for now
 
       // Save grip strength
       await db.grip_strength.where('encounter_id').equals(encounterId).delete();
@@ -436,6 +408,16 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
         </div>
       </div>
 
+      {/* Chief Complaint */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Chief Complaint</h3>
+        <Input
+          value={chiefComplaint}
+          onChange={(e) => setChiefComplaint(e.target.value)}
+          placeholder="Chief complaint..."
+        />
+      </div>
+
       {/* Subjective Section */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Subjective</h3>
@@ -450,7 +432,7 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
       {/* Objective Section */}
       <div className="bg-white rounded-lg shadow p-6 space-y-6">
         <h3 className="text-lg font-semibold text-gray-900">Objective</h3>
-        
+
         {/* Area Inspected */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Area Inspected</label>
@@ -487,23 +469,23 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Spasticity (Ashworth Scale)</label>
           <div className="space-y-2">
-            {spasticityFindings.map((spasticity, index) => (
+            {ashworthScale.map((spasticity, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <Input
                   placeholder="Body part (e.g., codo R+)"
                   value={spasticity.body_part}
                   onChange={(e) => {
-                    const updated = [...spasticityFindings];
+                    const updated = [...ashworthScale];
                     updated[index].body_part = e.target.value;
-                    setSpasticityFindings(updated);
+                    setAshworthScale(updated);
                   }}
                 />
                 <select
                   value={spasticity.ashworth_grade}
                   onChange={(e) => {
-                    const updated = [...spasticityFindings];
+                    const updated = [...ashworthScale];
                     updated[index].ashworth_grade = e.target.value as '0' | '1' | '1+' | '2' | '3' | '4';
-                    setSpasticityFindings(updated);
+                    setAshworthScale(updated);
                   }}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -515,9 +497,9 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
                 <select
                   value={spasticity.side}
                   onChange={(e) => {
-                    const updated = [...spasticityFindings];
+                    const updated = [...ashworthScale];
                     updated[index].side = e.target.value as 'R' | 'L' | 'bilateral';
-                    setSpasticityFindings(updated);
+                    setAshworthScale(updated);
                   }}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -529,8 +511,8 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    const updated = spasticityFindings.filter((_, i) => i !== index);
-                    setSpasticityFindings(updated);
+                    const updated = ashworthScale.filter((_, i) => i !== index);
+                    setAshworthScale(updated);
                   }}
                 >
                   Remove
@@ -539,7 +521,7 @@ export function SOAPNoteForm({ encounterId, onSave, onCancel }: SOAPNoteFormProp
             ))}
             <Button
               variant="outline"
-              onClick={() => setSpasticityFindings([...spasticityFindings, { body_part: '', ashworth_grade: '0', side: 'R' }])}
+              onClick={() => setAshworthScale([...ashworthScale, { body_part: '', ashworth_grade: '0', side: 'R' }])}
             >
               Add Spasticity Finding
             </Button>

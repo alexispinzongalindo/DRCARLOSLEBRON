@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
+import { SOAPNoteForm } from './components/encounters/SOAPNoteFormSimple';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PatientList } from './components/patients/PatientList';
+import { PatientRegistrationForm } from './components/patients/PatientRegistrationForm';
 import { AppointmentCalendar } from './components/appointments/AppointmentCalendar';
 import { db } from './db/dexie';
 import { seedDemoData } from './db/seedDemo';
@@ -61,6 +63,7 @@ function App() {
 function AppContent() {
   const { user } = useAuthStore();
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
 
   if (!user) {
     return <LoginForm />;
@@ -72,9 +75,29 @@ function AppContent() {
         return <PatientList />;
       case 'appointments':
         return <AppointmentCalendar />;
+      case 'new-patient':
+        return (
+          <PatientRegistrationForm
+            onSave={(patient) => {
+              console.log('Patient saved:', patient);
+              setCurrentPage('patients');
+            }}
+            onCancel={() => setCurrentPage('patients')}
+          />
+        );
+      case 'soap-note':
+        return selectedEncounterId ? (
+          <SOAPNoteForm
+            encounterId={selectedEncounterId}
+            onSave={() => setCurrentPage('dashboard')}
+            onCancel={() => setCurrentPage('dashboard')}
+          />
+        ) : (
+          <Dashboard />
+        );
       case 'dashboard':
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={setCurrentPage} />;
     }
   };
 

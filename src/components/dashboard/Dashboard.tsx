@@ -13,7 +13,11 @@ interface EncounterWithPatient extends Encounter {
   patientName?: string;
 }
 
-export function Dashboard() {
+interface DashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { staff } = useAuthStore();
   const [todaysAppointments, setTodaysAppointments] = useState<AppointmentWithPatient[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
@@ -111,10 +115,10 @@ export function Dashboard() {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => onNavigate?.('new-patient')}>
             New Patient
           </Button>
-          <Button>
+          <Button onClick={() => onNavigate?.('appointments')}>
             New Appointment
           </Button>
         </div>
