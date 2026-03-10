@@ -7,6 +7,7 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { PatientList } from './components/patients/PatientList';
 import { PatientRegistrationForm } from './components/patients/PatientRegistrationForm';
 import { AppointmentCalendar } from './components/appointments/AppointmentCalendar';
+import { AppointmentForm } from './components/appointments/AppointmentForm';
 import { db } from './db/dexie';
 import { seedDemoData } from './db/seedDemo';
 
@@ -75,6 +76,16 @@ function AppContent() {
         return <PatientList />;
       case 'appointments':
         return <AppointmentCalendar />;
+      case 'new-appointment':
+        return (
+          <AppointmentForm
+            onSave={(appointment) => {
+              console.log('Appointment saved:', appointment);
+              setCurrentPage('appointments');
+            }}
+            onCancel={() => setCurrentPage('appointments')}
+          />
+        );
       case 'new-patient':
         return (
           <PatientRegistrationForm
@@ -97,7 +108,19 @@ function AppContent() {
         );
       case 'dashboard':
       default:
-        return <Dashboard onNavigate={setCurrentPage} />;
+        return (
+          <Dashboard 
+            onNavigate={setCurrentPage}
+            onCompleteNote={(encounterId) => {
+              setSelectedEncounterId(encounterId);
+              setCurrentPage('soap-note');
+            }}
+            onViewPatient={(patientId) => {
+              // For now, navigate to patients list - future: show patient detail
+              setCurrentPage('patients');
+            }}
+          />
+        );
     }
   };
 

@@ -1,0 +1,270 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '../shared/Button';
+import { Input } from '../shared/Input';
+import { db } from '../../db/dexie';
+import { useAuthStore } from '../../store/authStore';
+import type { Patient, Staff, Appointment } from '../../db/dexie';
+
+interface AppointmentFormProps {
+  onSave: (appointment: Appointment) => void;
+  onCancel: () => void;
+  existingAppointment?: Appointment;
+}
+
+export function AppointmentForm({ onSave, onCancel, existingAppointment }: AppointmentFormProps) {
+  const { staff } = useAuthStore();
+  const [isSaving, setIsSaving] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [staffMembers, setStaffMembers] = useState<Staff[]>([]);
+  
+  // Form state
+  const [selectedPatientId, setSelectedPatientId] = useState(existingAppointment?.patient_id || '');
+  const [selectedStaffId, setSelectedStaffId] = useState(existingAppointment?.staff_id || staff?.id || '');
+  const [appointmentDate, setAppointmentDate] = useState(existingAppointment?.appointment_date || '');
+  const [startTime, setStartTime] = useState(existingAppointment?.start_time || '');
+  const [endTime, setEndTime] = useState(existingAppointment?.end_time || '');
+  const [appointmentType, setAppointmentType] = useState(existingAppointment?.type || 'Evaluation');
+  const [notes, setNotes] = useState(existingAppointment?.notes || '');
+  const [status, setStatus] = useState<'scheduled' | 'confirmed' | 'checked_in' | 'completed' | 'cancelled' | 'no_show'>(
+    existingAppointment?.status || 'scheduled'
+  );
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load patients
+        const allPatients = await db.patients
+          .filter(p => !p.is_deleted)
+          .toArray();
+        setPatients(allPatients);
+
+        // Load staff members
+        const allStaff = await db.staff
+          .filter(s => s.is_active !== false)
+          .toArray();
+        setStaffMembers(allStaff);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const handleSave = async () => {
+    if (!selectedPatientId || !appointmentDate || !startTime || !endTime) {
+      alert('Please fill in required fields: Patient, Date, Start Time, and End Time');
+      return;
+    }
+
+    if (startTime >= endTime) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const appointmentData: Partial<Appointment> = {
+        patient_id: selectedPatientId,
+        staff_id: selectedStaffId,
+        appointment_date: appointmentDate,
+        start_time: startTime,
+        end_time: endTime,
+        type: appointmentType,
+        status,
+        notes: notes.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      let savedAppointment: Appointment;
+
+      if (existingAppointment) {
+        // Update existing appointment
+        await db.appointments.update(existingAppointment.id!, appointmentData);
+        savedAppointment = { ...existingAppointment, ...appointmentData } as Appointment;
+      } else {
+        // Create new appointment
+        const newAppointment: Appointment = {
+          ...appointmentData,
+          created_at: new Date().toISOString(),
+          sync_status: 'pending'
+        } as Appointment;
+
+        const id = await db.appointments.add(newAppointment);
+        savedAppointment = { ...newAppointment, id: id as string };
+      }
+
+      onSave(savedAppointment);
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      alert('Error saving appointment. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const calculateEndTime = (start: string) => {
+    if (!start) return '';
+    const [hours, minutes] = start.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    // Default 60-minute appointment
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  const handleStartTimeChange = (time: string) => {
+    setStartTime(time);
+    if (!endTime || endTime <= time) {
+      setEndTime(calculateEndTime(time));
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="bg-blue-50 rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {existingAppointment ? 'Edit Appointment' : 'Schedule New Appointment'}
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {existingAppointment ? 'Update appointment details' : 'Schedule a new patient appointment'}
+        </p>
+      </div>
+
+      {/* Appointment Details */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Appointment Details</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Patient <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedPatientId}
+              onChange={(e) => setSelectedPatientId(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="">Select a patient</option>
+              {patients.map(patient => (
+                <option key={patient.id} value={patient.id}>
+                  {patient.first_name} {patient.last_name} - {patient.mrn}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Therapist
+            </label>
+            <select
+              value={selectedStaffId}
+              onChange={(e) => setSelectedStaffId(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select therapist</option>
+              {staffMembers.filter(s => s.role === 'therapist' || s.role === 'admin').map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.first_name} {member.last_name} ({member.role})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="date"
+              value={appointmentDate}
+              onChange={(e) => setAppointmentDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Start Time <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="time"
+              value={startTime}
+              onChange={(e) => handleStartTimeChange(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              End Time <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+            <select
+              value={appointmentType}
+              onChange={(e) => setAppointmentType(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="Evaluation">Evaluation</option>
+              <option value="Treatment">Treatment</option>
+              <option value="Re-evaluation">Re-evaluation</option>
+              <option value="Discharge">Discharge</option>
+              <option value="Consultation">Consultation</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="scheduled">Scheduled</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="checked_in">Checked In</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="no_show">No Show</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full h-24 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Additional notes about the appointment..."
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-4">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : existingAppointment ? 'Update Appointment' : 'Schedule Appointment'}
+        </Button>
+      </div>
+    </div>
+  );
+}

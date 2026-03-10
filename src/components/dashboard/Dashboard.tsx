@@ -15,9 +15,11 @@ interface EncounterWithPatient extends Encounter {
 
 interface DashboardProps {
   onNavigate?: (page: string) => void;
+  onCompleteNote?: (encounterId: string) => void;
+  onViewPatient?: (patientId: string) => void;
 }
 
-export function Dashboard({ onNavigate }: DashboardProps = {}) {
+export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: DashboardProps = {}) {
   const { staff } = useAuthStore();
   const [todaysAppointments, setTodaysAppointments] = useState<AppointmentWithPatient[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
@@ -118,7 +120,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
           <Button variant="outline" onClick={() => onNavigate?.('new-patient')}>
             New Patient
           </Button>
-          <Button onClick={() => onNavigate?.('appointments')}>
+          <Button onClick={() => onNavigate?.('new-appointment')}>
             New Appointment
           </Button>
         </div>
@@ -240,7 +242,11 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
                           {formatDate(encounter.encounter_date)} • {encounter.encounter_type}
                         </p>
                       </div>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => onCompleteNote?.(encounter.id!)}
+                      >
                         Complete
                       </Button>
                     </div>
@@ -268,7 +274,11 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
                         <p className="font-medium text-gray-900">{patient.first_name} {patient.last_name}</p>
                         <p className="text-sm text-gray-600">MRN: {patient.mrn}</p>
                       </div>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => onViewPatient?.(patient.id!)}
+                      >
                         View
                       </Button>
                     </div>
