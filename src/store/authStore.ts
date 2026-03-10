@@ -1,18 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { db } from '../db/dexie';
-import type { User } from '@supabase/supabase-js';
 import type { Staff } from '../db/dexie';
 
+interface AuthUser {
+  id: string;
+  email: string;
+}
+
 interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   staff: Staff | null;
   isLoading: boolean;
   sessionTimeout: number;
   lastActivity: number;
   
-  // Actions
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   checkSession: () => Promise<void>;
@@ -22,10 +25,10 @@ interface AuthState {
   hasPermission: (permission: string) => boolean;
 }
 
-const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
+const SESSION_TIMEOUT = 15 * 60 * 1000;
 
-const rolePermissions = {
-  admin: ['*'], // All permissions
+const rolePermissions: Record<string, string[]> = {
+  admin: ['*'],
   therapist: [
     'patients:read', 'patients:write',
     'encounters:read', 'encounters:write',
@@ -59,41 +62,57 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         
         try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
-          if (error) {
-            set({ isLoading: false });
-            return { success: false, error: error.message };
-          }
-
-          if (data.user) {
-            // Get staff record
-            const staff = await db.staff.where('user_id').equals(data.user.id).first();
-            
-            if (!staff) {
-              await supabase.auth.signOut();
-              set({ isLoading: false });
-              return { success: false, error: 'Staff record not found' };
-            }
-
-            set({ 
-              user: data.user, 
-              staff, 
-              isLoading: false,
-              lastActivity: Date.now()
+          if (isSupabaseConfigured && supabase) {
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email,
+              password
             });
 
-            // Log audit entry
-            await db.logAudit('login', 'auth', data.user.id);
+            if (error) {
+              set({ isLoading: false });
+              return { success: false, error: error.message };
+            }
 
-            return { success: true };
+            if (data.user) {
+              const staff = await db.staff.where('user_id').equals(data.user.id).first();
+              
+              if (!staff) {
+                await supabase.auth.signOut();
+                set({ isLoading: false });
+                return { success: false, error: 'Staff record not found' };
+              }
+
+              set({ 
+                user: { id: data.user.id, email: data.user.email || email },
+                staff, 
+                isLoading: false,
+                lastActivity: Date.now()
+              });
+
+              await db.logAudit('login', 'auth', data.user.id);
+              return { success: true };
+            }
+
+            set({ isLoading: false });
+            return { success: false, error: 'Authentication failed' };
+          } else {
+            // Offline-only mode: check staff by email in local DB
+            const staff = await db.staff.where('email').equals(email).first();
+            
+            if (staff) {
+              set({
+                user: { id: staff.id || 'local-user', email },
+                staff,
+                isLoading: false,
+                lastActivity: Date.now()
+              });
+              await db.logAudit('login', 'auth', staff.id || 'local-user');
+              return { success: true };
+            }
+
+            set({ isLoading: false });
+            return { success: false, error: 'Staff record not found. Running in offline mode.' };
           }
-
-          set({ isLoading: false });
-          return { success: false, error: 'Authentication failed' };
         } catch (error) {
           set({ isLoading: false });
           return { success: false, error: 'Network error' };
@@ -107,19 +126,24 @@ export const useAuthStore = create<AuthState>()(
           await db.logAudit('logout', 'auth', user.id);
         }
 
-        await supabase.auth.signOut();
+        if (isSupabaseConfigured && supabase) {
+          await supabase.auth.signOut();
+        }
         set({ user: null, staff: null, lastActivity: Date.now() });
       },
 
       checkSession: async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          const staff = await db.staff.where('user_id').equals(session.user.id).first();
-          set({ user: session.user, staff });
-        } else {
-          set({ user: null, staff: null });
+        if (isSupabaseConfigured && supabase) {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            const staff = await db.staff.where('user_id').equals(session.user.id).first();
+            set({ user: { id: session.user.id, email: session.user.email || '' }, staff });
+          } else {
+            set({ user: null, staff: null });
+          }
         }
+        // In offline mode, persisted state from zustand handles session
       },
 
       updateLastActivity: () => {
