@@ -244,6 +244,34 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
     }));
   };
 
+  const removeTreatmentGoal = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      treatmentGoals: prev.treatmentGoals.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeMMTFinding = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      mmtFindings: prev.mmtFindings.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeSpasticityFinding = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      spasticityFindings: prev.spasticityFindings.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeTransferFinding = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      transferFindings: prev.transferFindings.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSave = async () => {
     try {
       // Compile SOAP note data
@@ -469,7 +497,16 @@ ${formData.treatmentGoals.map((g, i) => `${i + 1}. ${g.description} (${g.timefra
         
         <div className="space-y-4">
           {formData.mmtFindings.map((finding, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg relative">
+              <button
+                onClick={() => removeMMTFinding(index)}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-1 transition-colors"
+                title="Delete this MMT finding"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Body Part</label>
                 <select
@@ -651,8 +688,17 @@ ${formData.treatmentGoals.map((g, i) => `${i + 1}. ${g.description} (${g.timefra
         
         <div className="space-y-3">
           {formData.treatmentGoals.map((goal, index) => (
-            <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="font-medium text-green-800">{goal.category} Goal</div>
+            <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg relative">
+              <button
+                onClick={() => removeTreatmentGoal(index)}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-1 transition-colors"
+                title="Delete this goal"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="font-medium text-green-800 pr-8">{goal.category} Goal</div>
               <div className="text-sm text-green-700">{goal.description}</div>
               <div className="text-xs text-green-600">Timeframe: {goal.timeframe}</div>
             </div>
