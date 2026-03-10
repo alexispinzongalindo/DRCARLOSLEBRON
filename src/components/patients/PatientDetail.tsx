@@ -27,7 +27,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
   const [appointments, setAppointments] = useState<AppointmentWithStatus[]>([]);
   const [encounters, setEncounters] = useState<EncounterWithNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'appointments' | 'encounters' | 'notes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'appointments' | 'encounters' | 'evaluations' | 'notes'>('overview');
 
   useEffect(() => {
     const loadPatientData = async () => {
@@ -179,6 +179,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
               { id: 'overview', label: 'Overview' },
               { id: 'appointments', label: `Appointments (${appointments.length})` },
               { id: 'encounters', label: `Encounters (${encounters.length})` },
+              { id: 'evaluations', label: 'Evaluations & Records' },
               { id: 'notes', label: 'Clinical Notes' }
             ].map(tab => (
               <button
@@ -380,6 +381,151 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                     ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Evaluations Tab */}
+          {activeTab === 'evaluations' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">Evaluations & Clinical Records</h3>
+                <Button onClick={onCreateEncounter}>New Evaluation</Button>
+              </div>
+              
+              {/* Sample Evaluation based on Dr. Lebron's format */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-white rounded-lg p-6 shadow">
+                  <div className="border-b border-gray-200 pb-4 mb-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-900">Physical Therapy Evaluation</h4>
+                        <p className="text-sm text-gray-600">Optimum Therapy • (787) 930-0174</p>
+                        <p className="text-sm text-gray-600">Edificio Roman Carr 107 km 1.1, Aguadilla PR 00603</p>
+                      </div>
+                      <div className="text-right text-sm text-gray-600">
+                        <p>Date: {formatDate(new Date().toISOString())}</p>
+                        <p>Provider: Dr. Carlos Lebron-Quiñones PT DPT</p>
+                        <p>NPI: 1477089696 • License: 4521 • PTAN: LG520</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Patient Information</h5>
+                      <div className="space-y-1 text-sm">
+                        <p><span className="font-medium">Name:</span> {patient?.first_name} {patient?.last_name}</p>
+                        <p><span className="font-medium">DOB:</span> {patient?.dob ? formatDate(patient.dob) : 'N/A'}</p>
+                        <p><span className="font-medium">Age:</span> {patient?.dob ? calculateAge(patient.dob) : 'N/A'}</p>
+                        <p><span className="font-medium">Sex:</span> {patient?.sex}</p>
+                        <p><span className="font-medium">PRN:</span> {patient?.mrn}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Diagnoses</h5>
+                      <div className="space-y-1 text-sm">
+                        <p>• I69.351 - Hemiplegia R+ (dominant)</p>
+                        <p>• R53.1 - Weakness</p>
+                        <p>• R26.2 - Difficulty walking</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Chief Complaint</h5>
+                      <p className="text-sm bg-blue-50 p-3 rounded">PT Evaluation and Tx</p>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Subjective</h5>
+                      <div className="text-sm bg-gray-50 p-3 rounded space-y-2">
+                        <p>Patient reports history of CVA with resulting right-sided weakness and mobility limitations.</p>
+                        <p>Currently receiving botox treatments for spasticity management.</p>
+                        <p>Patient expresses desire to improve functional mobility and independence with daily activities.</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Objective Findings</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-3 rounded">
+                          <h6 className="font-medium mb-2">Functional Measures</h6>
+                          <ul className="text-sm space-y-1">
+                            <li>• TUG Test: 36.5 seconds</li>
+                            <li>• Five Times Sit-to-Stand: Unable</li>
+                          </ul>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded">
+                          <h6 className="font-medium mb-2">Grip Strength</h6>
+                          <ul className="text-sm space-y-1">
+                            <li>• Left: 55.2 lbs</li>
+                            <li>• Right: 18.2 lbs</li>
+                          </ul>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded">
+                          <h6 className="font-medium mb-2">MMT Lower Extremity</h6>
+                          <ul className="text-sm space-y-1">
+                            <li>• Hip Flexion R: 3/5</li>
+                            <li>• Knee Extension R: 3/5</li>
+                            <li>• Ankle DF R: 2/5</li>
+                          </ul>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded">
+                          <h6 className="font-medium mb-2">Ashworth Scale UE</h6>
+                          <ul className="text-sm space-y-1">
+                            <li>• Elbow: 3</li>
+                            <li>• Hand: 3</li>
+                            <li>• Shoulder: 2</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Assessment</h5>
+                      <div className="text-sm bg-yellow-50 p-3 rounded">
+                        <p>Patient presents with significant right-sided hemiplegia secondary to CVA with functional limitations in mobility, transfers, and ADLs. Demonstrates potential for improvement with structured therapy program.</p>
+                        <p className="mt-2"><span className="font-medium">Prognosis:</span> Good for functional improvement with consistent therapy</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Plan</h5>
+                      <div className="bg-green-50 p-3 rounded">
+                        <div className="text-sm space-y-2">
+                          <p><span className="font-medium">Frequency:</span> 12 treatments, 2x/week for 6 weeks</p>
+                          <p><span className="font-medium">CPT Codes:</span></p>
+                          <ul className="ml-4 space-y-1">
+                            <li>• 97110 - Therapeutic Exercise</li>
+                            <li>• 97112 - Neuromuscular Education</li>
+                            <li>• 97116 - Gait Training</li>
+                          </ul>
+                          <p><span className="font-medium">Goals:</span></p>
+                          <ul className="ml-4 space-y-1">
+                            <li>• Improve TUG test to &lt;30 seconds</li>
+                            <li>• Complete 5x sit-to-stand independently</li>
+                            <li>• Increase R grip strength to 25+ lbs</li>
+                            <li>• Improve functional mobility and safety</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4 mt-6">
+                    <div className="flex justify-between items-center text-sm text-gray-600">
+                      <p>Evaluation completed: {formatDate(new Date().toISOString())}</p>
+                      <p>Dr. Carlos Lebron-Quiñones PT DPT</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional evaluations would be listed here */}
+              <div className="text-center py-4 text-gray-500">
+                <p>Additional evaluations and progress notes will appear here as they are completed.</p>
+              </div>
             </div>
           )}
 

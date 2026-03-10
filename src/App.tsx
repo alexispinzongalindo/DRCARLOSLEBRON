@@ -79,7 +79,15 @@ function AppContent() {
   const renderPage = () => {
     switch (currentPage) {
       case 'patients':
-        return <PatientList />;
+        return (
+          <PatientList 
+            onSelectPatient={(patient) => {
+              setSelectedPatientId(patient.id!);
+              setCurrentPage('patient-detail');
+            }}
+            onNewPatient={() => setCurrentPage('new-patient')}
+          />
+        );
       case 'appointments':
         return (
           <InteractiveCalendar
@@ -181,8 +189,8 @@ function AppContent() {
               setCurrentPage('soap-note');
             }}
             onViewPatient={(patientId) => {
-              // For now, navigate to patients list - future: show patient detail
-              setCurrentPage('patients');
+              setSelectedPatientId(patientId);
+              setCurrentPage('patient-detail');
             }}
           />
         );
