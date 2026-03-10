@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { db } from '../../db/dexie';
 import { formatDate, calculateAge } from '../../lib/utils';
-import { COMPREHENSIVE_CPT_CODES as CPT_CODES, COMPREHENSIVE_ICD10_CODES as ICD10_CODES } from '../../data/comprehensiveClinicalCodes';
+import { COMPREHENSIVE_CPT_CODES as CPT_CODES } from '../../data/comprehensiveClinicalCodes';
+import { ICD10_PT_CODES as ICD10_CODES } from '../../data/icd10PT';
 import { INDEPENDENCE_LEVELS } from '../../data/clinicalCodes';
 import type { SOAPNote, Encounter, Patient, PatientDiagnosis } from '../../db/dexie';
 
