@@ -4,6 +4,7 @@ import { Button } from '../shared/Button';
 import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { AIAssistant } from '../ai/AIAssistant';
+import { useLanguage } from '../../lib/i18n';
 
 
 interface AppLayoutProps {
@@ -15,6 +16,7 @@ interface AppLayoutProps {
 export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: AppLayoutProps) {
   const { staff, signOut, updateLastActivity, isSessionExpired } = useAuthStore();
   const network = useNetworkStatus();
+  const { lang, toggleLang, t } = useLanguage();
 
   useEffect(() => {
     // Check session expiration every minute
@@ -50,6 +52,20 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
                 <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${network.color}`} />
                 <span className="text-xs text-gray-500 hidden sm:inline">{network.label}</span>
               </div>
+
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLang}
+                className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 rounded-full px-2 py-1 transition-colors flex-shrink-0"
+                title={lang === 'en' ? 'Cambiar a Español' : 'Switch to English'}
+              >
+                <span className="text-xs font-bold text-gray-600 w-5 text-center">{lang === 'en' ? 'EN' : 'ES'}</span>
+                <div className="relative w-8 h-4 bg-teal-200 rounded-full mx-0.5">
+                  <div className={`absolute top-0.5 w-3 h-3 bg-teal-600 rounded-full transition-all duration-200 ${lang === 'es' ? 'left-4' : 'left-0.5'}`} />
+                </div>
+                <span className="text-xs font-bold text-gray-600 w-5 text-center">{lang === 'en' ? 'ES' : 'EN'}</span>
+              </button>
+
               {/* Full name on desktop only */}
               <div className="hidden sm:block text-sm text-gray-700 text-right">
                 <div className="font-medium leading-tight">{staff?.first_name} {staff?.last_name}</div>
@@ -60,8 +76,8 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
                 {staff?.first_name?.[0]}{staff?.last_name?.[0]}
               </div>
               <button onClick={signOut} className="text-xs sm:text-sm text-gray-500 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 whitespace-nowrap flex-shrink-0">
-                <span className="sm:hidden">Out</span>
-                <span className="hidden sm:inline">Sign Out</span>
+                <span className="sm:hidden">{t.header.out}</span>
+                <span className="hidden sm:inline">{t.header.signOut}</span>
               </button>
             </div>
           </div>
@@ -72,14 +88,14 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex overflow-x-auto scrollbar-hide -mb-px">
               {[
-                { id: 'dashboard',    label: 'Dashboard',    short: 'Home' },
-                { id: 'patients',     label: 'Patients',     short: 'Patients' },
-                { id: 'appointments', label: 'Appointments', short: 'Appts' },
-                { id: 'time-clock',   label: 'Time Clock',   short: 'Clock' },
-                { id: 'reminders',    label: 'Reminders',    short: 'Remind' },
-                { id: 'staff',        label: 'Staff',        short: 'Staff' },
-                { id: 'payroll',      label: 'Payroll',      short: 'Pay' },
-                { id: 'training',     label: 'Training',     short: 'Train' },
+                { id: 'dashboard',    label: t.nav.dashboard,    short: t.nav.dashboard },
+                { id: 'patients',     label: t.nav.patients,     short: t.nav.patients },
+                { id: 'appointments', label: t.nav.appointments, short: t.nav.appointments },
+                { id: 'time-clock',   label: t.nav.timeClock,    short: t.nav.timeClock },
+                { id: 'reminders',    label: t.nav.reminders,    short: t.nav.reminders },
+                { id: 'staff',        label: t.nav.staff,        short: t.nav.staff },
+                { id: 'payroll',      label: t.nav.payroll,      short: t.nav.payroll },
+                { id: 'training',     label: t.nav.training,     short: t.nav.training },
               ].map(item => (
                 <button
                   key={item.id}
@@ -110,12 +126,10 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
       {isSessionExpired() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Session Expired</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Your session has expired due to inactivity. Please sign in again.
-            </p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t.session.expired}</h3>
+            <p className="text-sm text-gray-600 mb-4">{t.session.expiredMessage}</p>
             <Button onClick={signOut} className="w-full">
-              Sign In Again
+              {t.session.signInAgain}
             </Button>
           </div>
         </div>

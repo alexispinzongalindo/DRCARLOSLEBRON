@@ -4,6 +4,7 @@ import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
 import { formatDate, formatTime } from '../../lib/utils';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { useLanguage } from '../../lib/i18n';
 import type { Patient, Appointment, Encounter } from '../../db/dexie';
 
 interface AppointmentWithPatient extends Appointment {
@@ -23,6 +24,7 @@ interface DashboardProps {
 export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: DashboardProps = {}) {
   const { staff } = useAuthStore();
   const network = useNetworkStatus();
+  const { t } = useLanguage();
   const [todaysAppointments, setTodaysAppointments] = useState<AppointmentWithPatient[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
   const [pendingNotes, setPendingNotes] = useState<EncounterWithPatient[]>([]);
@@ -112,7 +114,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {staff?.first_name}
+            {t.dashboard.welcomeBack} {staff?.first_name}
           </h1>
           <p className="text-gray-600">
             {formatDate(new Date().toISOString())} • {staff?.role?.replace('_', ' ').toUpperCase()}
@@ -120,10 +122,10 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3">
           <Button variant="outline" onClick={() => onNavigate?.('new-patient')}>
-            New Patient
+            {t.dashboard.newPatient}
           </Button>
           <Button onClick={() => onNavigate?.('new-appointment')}>
-            New Appointment
+            {t.dashboard.newAppointment}
           </Button>
         </div>
       </div>
@@ -140,7 +142,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Today's Appointments</p>
+              <p className="text-sm font-medium text-gray-500">{t.dashboard.todaysAppointments}</p>
               <p className="text-2xl font-semibold text-gray-900">{todaysAppointments.length}</p>
             </div>
           </div>
@@ -156,7 +158,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Pending Notes</p>
+              <p className="text-sm font-medium text-gray-500">{t.dashboard.pendingNotes}</p>
               <p className="text-2xl font-semibold text-gray-900">{pendingNotes.length}</p>
             </div>
           </div>
@@ -172,7 +174,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Active Patients</p>
+              <p className="text-sm font-medium text-gray-500">{t.dashboard.activePatients}</p>
               <p className="text-2xl font-semibold text-gray-900">{recentPatients.length}</p>
             </div>
           </div>
@@ -188,7 +190,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Sync Status</p>
+              <p className="text-sm font-medium text-gray-500">{t.dashboard.syncStatus}</p>
               <p className={`text-sm font-semibold ${network.textColor}`}>{network.label}</p>
             </div>
           </div>
@@ -200,11 +202,11 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
         {/* Today's Appointments */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Today's Appointments</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t.dashboard.todaysAppointments}</h3>
           </div>
           <div className="p-6">
             {todaysAppointments.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No appointments scheduled for today</p>
+              <p className="text-gray-500 text-center py-8">{t.dashboard.noAppointmentsToday}</p>
             ) : (
               <div className="space-y-4">
                 {todaysAppointments.slice(0, 5).map((appointment) => (
@@ -229,11 +231,11 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
         {(staff?.role === 'therapist' || staff?.role === 'admin') && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Pending Notes</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t.dashboard.pendingNotes}</h3>
             </div>
             <div className="p-6">
               {pendingNotes.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No pending notes</p>
+                <p className="text-gray-500 text-center py-8">{t.dashboard.noPendingNotes}</p>
               ) : (
                 <div className="space-y-4">
                   {pendingNotes.slice(0, 5).map((encounter) => (
@@ -244,12 +246,12 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
                           {formatDate(encounter.encounter_date)} • {encounter.encounter_type}
                         </p>
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => onCompleteNote?.(encounter.id!)}
                       >
-                        Complete
+                        {t.common.complete}
                       </Button>
                     </div>
                   ))}
@@ -263,11 +265,11 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
         {(staff?.role === 'front_desk' || staff?.role === 'admin') && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Recent Patients</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t.dashboard.recentPatients}</h3>
             </div>
             <div className="p-6">
               {recentPatients.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No recent patients</p>
+                <p className="text-gray-500 text-center py-8">{t.dashboard.noRecentPatients}</p>
               ) : (
                 <div className="space-y-4">
                   {recentPatients.slice(0, 5).map((patient) => (
@@ -276,12 +278,12 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
                         <p className="font-medium text-gray-900">{patient.first_name} {patient.last_name}</p>
                         <p className="text-sm text-gray-600">MRN: {patient.mrn}</p>
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => onViewPatient?.(patient.id!)}
                       >
-                        View
+                        {t.common.view}
                       </Button>
                     </div>
                   ))}
