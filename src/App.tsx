@@ -13,6 +13,10 @@ import { InteractiveCalendar } from './components/appointments/InteractiveCalend
 import { AppointmentReminders } from './components/appointments/AppointmentReminders';
 import { TimeClock } from './components/timeclock/TimeClock';
 import { PatientDetail } from './components/patients/PatientDetail';
+import { StaffList } from './components/staff/StaffList';
+import { StaffDetail } from './components/staff/StaffDetail';
+import { PayrollList } from './components/payroll/PayrollList';
+import { PayrollDetail } from './components/payroll/PayrollDetail';
 import { seedDemoData } from './db/seedDemo';
 
 function App() {
@@ -68,9 +72,15 @@ function App() {
 function AppContent() {
   const { user } = useAuthStore();
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [pageParams, setPageParams] = useState<Record<string, string>>({});
   const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+
+  const navigateTo = (page: string, params?: Record<string, string>) => {
+    setPageParams(params ?? {});
+    setCurrentPage(page);
+  };
 
   if (!user) {
     return <LoginForm />;
@@ -183,6 +193,32 @@ function AppContent() {
         ) : (
           <PatientList />
         );
+      case 'staff':
+        return (
+          <StaffList onNavigate={navigateTo} />
+        );
+      case 'staff-detail':
+        return pageParams?.staffId ? (
+          <StaffDetail
+            staffId={pageParams.staffId}
+            onBack={() => setCurrentPage('staff')}
+          />
+        ) : (
+          <StaffList onNavigate={navigateTo} />
+        );
+      case 'payroll':
+        return (
+          <PayrollList onNavigate={navigateTo} />
+        );
+      case 'payroll-detail':
+        return pageParams?.payrollId ? (
+          <PayrollDetail
+            payrollId={pageParams.payrollId}
+            onBack={() => setCurrentPage('payroll')}
+          />
+        ) : (
+          <PayrollList onNavigate={navigateTo} />
+        );
       case 'time-clock':
         return <TimeClock />;
       case 'reminders':
@@ -216,7 +252,7 @@ function AppContent() {
   };
 
   return (
-    <AppLayout currentPage={currentPage} onNavigate={setCurrentPage}>
+    <AppLayout currentPage={currentPage} onNavigate={(page) => navigateTo(page)}>
       {renderPage()}
     </AppLayout>
   );

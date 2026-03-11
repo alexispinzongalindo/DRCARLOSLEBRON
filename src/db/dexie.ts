@@ -36,6 +36,35 @@ export interface Staff {
   created_at?: string;
   updated_at?: string;
   sync_status?: 'pending' | 'synced' | 'conflict';
+  // Extended payroll/HR fields
+  hire_date?: string;
+  position?: string;
+  hourly_rate?: number;
+  pay_type?: 'hourly' | 'salary';
+  address?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  notes?: string;
+}
+
+export interface PayrollRecord {
+  id?: string;
+  staff_id: string;
+  pay_period_start: string;
+  pay_period_end: string;
+  regular_hours: number;
+  overtime_hours: number;
+  hourly_rate: number;
+  gross_pay: number;
+  deductions: number;
+  net_pay: number;
+  status: 'draft' | 'approved' | 'paid';
+  notes?: string;
+  approved_by?: string;
+  approved_at?: string;
+  paid_at?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Encounter {
@@ -297,6 +326,7 @@ export class OptimumTherapyDB extends Dexie {
   audit_log!: Table<AuditLog>;
   sync_log!: Table<SyncLog>;
   time_entries!: Table<TimeEntry>;
+  payroll!: Table<PayrollRecord>;
 
   constructor() {
     super('OptimumTherapyDB');
@@ -342,6 +372,29 @@ export class OptimumTherapyDB extends Dexie {
       audit_log: '++id, user_id, table_name, record_id, timestamp',
       sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
       time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status'
+    });
+
+    this.version(5).stores({
+      patients: '++id, mrn, first_name, last_name, dob, sync_status',
+      staff: '++id, user_id, first_name, last_name, role, email, sync_status',
+      encounters: '++id, patient_id, encounter_date, seen_by, status, sync_status',
+      appointments: '++id, patient_id, staff_id, appointment_date, start_time, status, sync_status',
+      soap_notes: '++id, encounter_id, sync_status',
+      mmt_findings: '++id, encounter_id, muscle_group, side, sync_status',
+      functional_measures: '++id, encounter_id, test_name, sync_status',
+      spasticity_findings: '++id, encounter_id, body_part, side, sync_status',
+      transfer_findings: '++id, encounter_id, transfer_type, sync_status',
+      grip_strength: '++id, encounter_id, side, sync_status',
+      gait_findings: '++id, encounter_id, sync_status',
+      patient_diagnoses: '++id, encounter_id, patient_id, icd10_code, diag_type, sync_status',
+      icd10_codes: '++id, code, description, chapter',
+      cpt_codes: '++id, code, description, category',
+      insurance_plans: '++id, payer_name, payer_id',
+      sync_queue: '++id, table_name, record_id, operation, created_at',
+      audit_log: '++id, user_id, table_name, record_id, timestamp',
+      sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
+      time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status',
+      payroll: '++id, staff_id, pay_period_start, pay_period_end, status'
     });
 
     // PHI encryption hooks disabled during testing - enable for go-live
