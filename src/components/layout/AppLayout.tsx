@@ -43,8 +43,11 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
             <OptimumTherapyLogo size="lg" className="hidden sm:block" />
 
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Sync dot — tooltip shows status on hover */}
-              <div title={network.label} className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${network.color}`} />
+              {/* Sync dot with label */}
+              <div className="flex items-center gap-1">
+                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${network.color}`} />
+                <span className="text-xs text-gray-500 hidden sm:inline">{network.label}</span>
+              </div>
               {/* Full name on desktop only */}
               <div className="hidden sm:block text-sm text-gray-700 text-right">
                 <div className="font-medium leading-tight">{staff?.first_name} {staff?.last_name}</div>

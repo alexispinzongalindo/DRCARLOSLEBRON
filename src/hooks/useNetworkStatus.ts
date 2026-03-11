@@ -86,7 +86,7 @@ export function useNetworkStatus(): SyncState {
     textColor = 'text-yellow-600';
   } else {
     status    = 'online';
-    label     = 'Synced';
+    label     = 'On Line';
     color     = 'bg-green-500';
     textColor = 'text-green-600';
   }

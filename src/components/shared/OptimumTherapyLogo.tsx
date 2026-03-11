@@ -8,9 +8,9 @@ interface OptimumTherapyLogoProps {
 
 export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumTherapyLogoProps) {
   const sizeMap = {
-    sm: { height: 56 },
-    md: { height: 80 },
-    lg: { height: 110 }
+    sm: { height: 48 },
+    md: { height: 70 },
+    lg: { height: 72 }
   };
 
   return (
