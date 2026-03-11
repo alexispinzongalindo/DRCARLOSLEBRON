@@ -82,23 +82,30 @@ export function AppointmentReminders() {
 
   const sendReminder = async (appointment: ReminderAppointment, method: 'sms' | 'email' | 'call') => {
     try {
-      // In a real implementation, this would integrate with SMS/email services
       const message = reminderSettings.message
         .replace('{time}', formatTime(appointment.start_time))
         .replace('{date}', formatDate(appointment.appointment_date))
         .replace('{patient}', appointment.patientName);
 
-      // Simulate sending reminder
-      console.log(`Sending ${method} reminder to ${appointment.patientName}:`, message);
-      
-      // Update appointment to mark reminder as sent
+      if (method === 'sms' && appointment.patientPhone) {
+        const response = await fetch('/api/sms/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: appointment.patientPhone, message }),
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'SMS failed');
+      } else if (method === 'email' && appointment.patientEmail) {
+        window.open(`mailto:${appointment.patientEmail}?subject=Appointment Reminder - Optimum Therapy&body=${encodeURIComponent(message)}`);
+      } else if (method === 'call' && appointment.patientPhone) {
+        window.open(`tel:${appointment.patientPhone}`);
+      }
+
       await db.appointments.update(appointment.id!, {
-        notes: (appointment.notes || '') + `\nReminder sent via ${method} on ${new Date().toISOString()}`
+        notes: (appointment.notes || '') + `\nReminder sent via ${method} on ${new Date().toLocaleString()}`
       });
 
-      // Show success message
       alert(`${method.toUpperCase()} reminder sent to ${appointment.patientName}`);
-      
       loadUpcomingAppointments();
     } catch (error) {
       console.error('Error sending reminder:', error);

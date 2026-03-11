@@ -95,6 +95,45 @@ Be professional, efficient, and practical — you are a full clinic assistant, n
   }
 });
 
+// ClickSend SMS
+app.post('/api/sms/send', async (req, res) => {
+  const { to, message } = req.body;
+  const username = process.env.CLICKSEND_USERNAME;
+  const apiKey = process.env.CLICKSEND_API_KEY;
+
+  if (!username || !apiKey) {
+    return res.status(500).json({ error: 'SMS not configured' });
+  }
+
+  try {
+    const credentials = Buffer.from(`${username}:${apiKey}`).toString('base64');
+    const response = await fetch('https://rest.clicksend.com/v3/sms/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{
+          source: 'optimum-therapy',
+          from: 'OptimumPT',
+          body: message,
+          to: to,
+        }]
+      }),
+    });
+
+    const data = await response.json();
+    if (data.response_code === 'SUCCESS') {
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ error: data.response_msg || 'SMS failed' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Google OAuth token exchange
 app.post('/api/google/auth/token', async (req, res) => {
   const { code } = req.body;
