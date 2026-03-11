@@ -505,7 +505,12 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
 
   const scrollTo = (id: string) => {
     setActiveSection(id);
-    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById(`section-${id}`);
+    if (el) {
+      const offset = 60; // px above section heading — clears the sticky nav bar
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   };
 
   // ── Shared input styles ───────────────────────────────────────────────────
