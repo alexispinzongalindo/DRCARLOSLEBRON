@@ -3,7 +3,8 @@ import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
 import { db } from '../../db/dexie';
 import { formatDate, formatTime, calculateAge } from '../../lib/utils';
-import type { Patient, Appointment, Encounter, SOAPNote } from '../../db/dexie';
+import { useAuthStore } from '../../store/authStore';
+import type { Patient, Appointment, Encounter, SOAPNote, ClinicalNote } from '../../db/dexie';
 
 interface PatientDetailProps {
   patientId: string;
@@ -24,10 +25,20 @@ interface EncounterWithNote extends Encounter {
 
 export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointment, onCreateEncounter }: PatientDetailProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
+  const { staff } = useAuthStore();
   const [appointments, setAppointments] = useState<AppointmentWithStatus[]>([]);
   const [encounters, setEncounters] = useState<EncounterWithNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'appointments' | 'encounters' | 'evaluations' | 'notes'>('overview');
+
+  // Clinical Notes state
+  const [clinicalNotes, setClinicalNotes] = useState<ClinicalNote[]>([]);
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const [editingNote, setEditingNote] = useState<ClinicalNote | null>(null);
+  const [noteType, setNoteType] = useState<ClinicalNote['note_type']>('progress');
+  const [noteContent, setNoteContent] = useState('');
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   useEffect(() => {
     const loadPatientData = async () => {
@@ -83,6 +94,79 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
 
     loadPatientData();
   }, [patientId]);
+
+  // Load clinical notes
+  useEffect(() => {
+    const pid: string | number = isNaN(Number(patientId)) ? patientId : Number(patientId);
+    db.clinical_notes.where('patient_id').equals(pid as string)
+      .reverse().sortBy('note_date')
+      .then(setClinicalNotes);
+  }, [patientId]);
+
+  const NOTE_TYPE_LABELS: Record<ClinicalNote['note_type'], string> = {
+    progress: 'Progress Note',
+    phone_call: 'Phone Call',
+    treatment_session: 'Treatment Session',
+    physician_communication: 'Physician Communication',
+    insurance_auth: 'Insurance / Auth',
+    missed_appointment: 'Missed Appointment',
+    discharge: 'Discharge Note',
+    general: 'General Note',
+  };
+
+  const NOTE_TYPE_COLORS: Record<ClinicalNote['note_type'], string> = {
+    progress: 'bg-blue-100 text-blue-800',
+    phone_call: 'bg-purple-100 text-purple-800',
+    treatment_session: 'bg-teal-100 text-teal-800',
+    physician_communication: 'bg-indigo-100 text-indigo-800',
+    insurance_auth: 'bg-yellow-100 text-yellow-800',
+    missed_appointment: 'bg-red-100 text-red-800',
+    discharge: 'bg-gray-100 text-gray-800',
+    general: 'bg-green-100 text-green-800',
+  };
+
+  const openNoteForm = (note?: ClinicalNote) => {
+    if (note) {
+      setEditingNote(note);
+      setNoteType(note.note_type);
+      setNoteContent(note.content);
+      setNoteDate(note.note_date);
+    } else {
+      setEditingNote(null);
+      setNoteType('progress');
+      setNoteContent('');
+      setNoteDate(new Date().toISOString().split('T')[0]);
+    }
+    setShowNoteForm(true);
+  };
+
+  const saveNote = async () => {
+    if (!noteContent.trim()) return;
+    setIsSavingNote(true);
+    const pid: string | number = isNaN(Number(patientId)) ? patientId : Number(patientId);
+    const now = new Date().toISOString();
+    try {
+      if (editingNote?.id) {
+        const eid = isNaN(Number(editingNote.id)) ? editingNote.id : Number(editingNote.id);
+        await db.clinical_notes.update(eid as any, { note_type: noteType, content: noteContent, note_date: noteDate, updated_at: now });
+      } else {
+        await db.clinical_notes.add({ patient_id: pid as string, staff_id: staff?.id, note_type: noteType, content: noteContent, note_date: noteDate, created_at: now, updated_at: now });
+      }
+      const updated = await db.clinical_notes.where('patient_id').equals(pid as string).reverse().sortBy('note_date');
+      setClinicalNotes(updated);
+      setShowNoteForm(false);
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const deleteNote = async (id: string | number | undefined) => {
+    if (!id || !confirm('Delete this note?')) return;
+    const nid = isNaN(Number(id)) ? id : Number(id);
+    await db.clinical_notes.delete(nid as any);
+    const pid: string | number = isNaN(Number(patientId)) ? patientId : Number(patientId);
+    setClinicalNotes(await db.clinical_notes.where('patient_id').equals(pid as string).reverse().sortBy('note_date'));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -532,10 +616,74 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
           {/* Notes Tab */}
           {activeTab === 'notes' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Clinical Notes</h3>
-              <div className="text-center py-8 text-gray-500">
-                Clinical notes will be displayed here
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">Clinical Notes</h3>
+                <Button onClick={() => openNoteForm()}>+ Add Note</Button>
               </div>
+
+              {/* Add / Edit Form */}
+              {showNoteForm && (
+                <div className="border border-teal-200 rounded-lg p-4 bg-teal-50 space-y-3">
+                  <h4 className="text-sm font-semibold text-teal-800">{editingNote ? 'Edit Note' : 'New Clinical Note'}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Note Type</label>
+                      <select value={noteType} onChange={e => setNoteType(e.target.value as ClinicalNote['note_type'])}
+                        className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-teal-500">
+                        {(Object.entries(NOTE_TYPE_LABELS) as [ClinicalNote['note_type'], string][]).map(([v, l]) => (
+                          <option key={v} value={v}>{l}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                      <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Note</label>
+                    <textarea rows={4} value={noteContent} onChange={e => setNoteContent(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 resize-none"
+                      placeholder="Enter clinical note..." />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => setShowNoteForm(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+                    <button onClick={saveNote} disabled={isSavingNote || !noteContent.trim()}
+                      className="px-4 py-2 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50">
+                      {isSavingNote ? 'Saving…' : 'Save Note'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes List */}
+              {clinicalNotes.length === 0 && !showNoteForm ? (
+                <div className="text-center py-10 text-gray-400">
+                  <p className="text-sm">No clinical notes yet.</p>
+                  <button onClick={() => openNoteForm()} className="mt-2 text-teal-600 text-sm hover:underline">Add the first note</button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {clinicalNotes.map(note => (
+                    <div key={note.id} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${NOTE_TYPE_COLORS[note.note_type]}`}>
+                            {NOTE_TYPE_LABELS[note.note_type]}
+                          </span>
+                          <span className="text-xs text-gray-400">{formatDate(note.note_date)}</span>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button onClick={() => openNoteForm(note)} className="text-xs text-teal-600 hover:underline">Edit</button>
+                          <button onClick={() => deleteNote(note.id)} className="text-xs text-red-500 hover:underline">Delete</button>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

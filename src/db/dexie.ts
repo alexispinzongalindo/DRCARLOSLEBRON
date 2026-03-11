@@ -135,6 +135,17 @@ export interface SOAPNote {
   sync_status?: 'pending' | 'synced' | 'conflict';
 }
 
+export interface ClinicalNote {
+  id?: string;
+  patient_id: string;
+  staff_id?: string;
+  note_type: 'progress' | 'phone_call' | 'treatment_session' | 'physician_communication' | 'insurance_auth' | 'missed_appointment' | 'discharge' | 'general';
+  content: string;
+  note_date: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface PatientDiagnosis {
   id?: string;
   encounter_id: string;
@@ -327,6 +338,7 @@ export class OptimumTherapyDB extends Dexie {
   sync_log!: Table<SyncLog>;
   time_entries!: Table<TimeEntry>;
   payroll!: Table<PayrollRecord>;
+  clinical_notes!: Table<ClinicalNote>;
 
   constructor() {
     super('OptimumTherapyDB');
@@ -395,6 +407,30 @@ export class OptimumTherapyDB extends Dexie {
       sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
       time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status',
       payroll: '++id, staff_id, pay_period_start, pay_period_end, status'
+    });
+
+    this.version(6).stores({
+      patients: '++id, mrn, first_name, last_name, dob, sync_status',
+      staff: '++id, user_id, first_name, last_name, role, email, sync_status',
+      encounters: '++id, patient_id, encounter_date, seen_by, status, sync_status',
+      appointments: '++id, patient_id, staff_id, appointment_date, start_time, status, sync_status',
+      soap_notes: '++id, encounter_id, sync_status',
+      mmt_findings: '++id, encounter_id, muscle_group, side, sync_status',
+      functional_measures: '++id, encounter_id, test_name, sync_status',
+      spasticity_findings: '++id, encounter_id, body_part, side, sync_status',
+      transfer_findings: '++id, encounter_id, transfer_type, sync_status',
+      grip_strength: '++id, encounter_id, side, sync_status',
+      gait_findings: '++id, encounter_id, sync_status',
+      patient_diagnoses: '++id, encounter_id, patient_id, icd10_code, diag_type, sync_status',
+      icd10_codes: '++id, code, description, chapter',
+      cpt_codes: '++id, code, description, category',
+      insurance_plans: '++id, payer_name, payer_id',
+      sync_queue: '++id, table_name, record_id, operation, created_at',
+      audit_log: '++id, user_id, table_name, record_id, timestamp',
+      sync_log: '++id, device_id, last_sync_at, sync_status, created_at',
+      time_entries: '++id, staff_id, date, clock_in, clock_out, sync_status',
+      payroll: '++id, staff_id, pay_period_start, pay_period_end, status',
+      clinical_notes: '++id, patient_id, staff_id, note_type, note_date'
     });
 
     // PHI encryption hooks disabled during testing - enable for go-live
