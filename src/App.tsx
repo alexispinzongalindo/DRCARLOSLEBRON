@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
+import { exchangeCodeForToken } from './lib/googleCalendar';
 import { EnhancedSOAPForm } from './components/encounters/EnhancedSOAPForm';
 import { db } from './db/dexie';
 import { AppLayout } from './components/layout/AppLayout';
@@ -28,6 +29,16 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Handle Google OAuth callback
+        if (window.location.pathname === '/auth/google/callback') {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get('code');
+          if (code) {
+            await exchangeCodeForToken(code);
+          }
+          window.history.replaceState({}, '', '/');
+        }
+
         await db.open();
         await seedDemoData();
         await useAuthStore.getState().checkSession();

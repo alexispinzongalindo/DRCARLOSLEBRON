@@ -95,6 +95,63 @@ Be professional, efficient, and practical — you are a full clinic assistant, n
   }
 });
 
+// Google OAuth token exchange
+app.post('/api/google/auth/token', async (req, res) => {
+  const { code } = req.body;
+  const clientId = process.env.VITE_GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = process.env.VITE_GOOGLE_REDIRECT_URI;
+
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      return res.status(400).json({ error: err });
+    }
+
+    const data = await response.json();
+    res.json({ access_token: data.access_token, refresh_token: data.refresh_token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Google OAuth token refresh
+app.post('/api/google/auth/refresh', async (req, res) => {
+  const { refresh_token } = req.body;
+  const clientId = process.env.VITE_GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        refresh_token,
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    const data = await response.json();
+    res.json({ access_token: data.access_token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Serve static files
 app.use(express.static(join(__dirname, 'dist')));
 

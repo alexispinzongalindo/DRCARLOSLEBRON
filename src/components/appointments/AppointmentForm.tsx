@@ -3,6 +3,7 @@ import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
 import { db } from '../../db/dexie';
 import { useAuthStore } from '../../store/authStore';
+import { isGoogleCalendarConnected, createCalendarEvent } from '../../lib/googleCalendar';
 import type { Patient, Staff, Appointment } from '../../db/dexie';
 
 interface AppointmentFormProps {
@@ -92,6 +93,29 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
 
         const id = await db.appointments.add(newAppointment);
         savedAppointment = { ...newAppointment, id: id as string };
+      }
+
+      // Sync to Google Calendar if connected
+      if (isGoogleCalendarConnected()) {
+        try {
+          const patient = await db.patients.get(savedAppointment.patient_id!);
+          const patientName = patient ? `${patient.first_name} ${patient.last_name}` : 'Patient';
+          await createCalendarEvent({
+            summary: `${savedAppointment.type} - ${patientName}`,
+            description: savedAppointment.notes || '',
+            start: {
+              dateTime: `${savedAppointment.appointment_date}T${savedAppointment.start_time}:00`,
+              timeZone: 'America/Puerto_Rico',
+            },
+            end: {
+              dateTime: `${savedAppointment.appointment_date}T${savedAppointment.end_time}:00`,
+              timeZone: 'America/Puerto_Rico',
+            },
+          });
+        } catch (gcalError) {
+          console.error('Google Calendar sync failed:', gcalError);
+          // Don't block saving if Google Calendar fails
+        }
       }
 
       onSave(savedAppointment);

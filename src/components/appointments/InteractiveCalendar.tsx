@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../shared/Button';
 import { db } from '../../db/dexie';
 import { formatDate, formatTime } from '../../lib/utils';
+import { getGoogleAuthUrl, isGoogleCalendarConnected, disconnectGoogleCalendar } from '../../lib/googleCalendar';
 import type { Appointment, Patient, Staff } from '../../db/dexie';
 
 interface AppointmentWithDetails extends Appointment {
@@ -21,6 +22,7 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
   const [appointments, setAppointments] = useState<AppointmentWithDetails[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('week');
   const [isLoading, setIsLoading] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState(isGoogleCalendarConnected());
 
   useEffect(() => {
     loadAppointments();
@@ -298,6 +300,21 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
           <p className="text-gray-600">{getDateRangeText()}</p>
         </div>
         <div className="flex space-x-3">
+          {googleConnected ? (
+            <Button
+              variant="outline"
+              onClick={() => { disconnectGoogleCalendar(); setGoogleConnected(false); }}
+            >
+              ✓ Google Calendar Connected
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => { window.location.href = getGoogleAuthUrl(); }}
+            >
+              Connect Google Calendar
+            </Button>
+          )}
           <Button variant="outline" onClick={onNewAppointment}>
             New Appointment
           </Button>
