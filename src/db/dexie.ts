@@ -91,6 +91,7 @@ export interface SOAPNote {
   tug_test_notes?: string;
   five_sit_stand_value?: string;
   five_sit_stand_notes?: string;
+  functional_measures_json?: string;
   // Gait
   gait_description?: string;
   gait_deviations?: string;

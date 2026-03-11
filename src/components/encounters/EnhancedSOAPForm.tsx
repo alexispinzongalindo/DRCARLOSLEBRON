@@ -70,6 +70,41 @@ const ASSISTIVE_DEVICES = [
   'Axillary crutches', 'Wheelchair', 'AFO', 'KAFO',
 ];
 
+const AREA_OPTIONS = [
+  // Spine
+  'Cervical Spine', 'Thoracic Spine', 'Lumbar / Lumbosacral Spine', 'Sacroiliac Joint',
+  // Shoulder
+  'Shoulder – Right', 'Shoulder – Left', 'Shoulder – Bilateral',
+  // Elbow
+  'Elbow – Right', 'Elbow – Left', 'Elbow – Bilateral',
+  // Wrist / Hand
+  'Wrist / Hand – Right', 'Wrist / Hand – Left', 'Wrist / Hand – Bilateral',
+  // Hip
+  'Hip – Right', 'Hip – Left', 'Hip – Bilateral',
+  // Knee
+  'Knee – Right', 'Knee – Left', 'Knee – Bilateral',
+  // Ankle / Foot
+  'Ankle / Foot – Right', 'Ankle / Foot – Left', 'Ankle / Foot – Bilateral',
+  // General
+  'Upper Extremity – Right', 'Upper Extremity – Left', 'Upper Extremity – Bilateral',
+  'Lower Extremity – Right', 'Lower Extremity – Left', 'Lower Extremity – Bilateral',
+  'Neurological / Post-CVA', 'Post-TBI', 'Post-SCI',
+  'General Conditioning / Whole Body',
+];
+
+const EXTRA_MEASURES: { id: string; label: string; unit: string; placeholder: string; hasNotes?: boolean; twoSided?: boolean }[] = [
+  { id: 'berg',    label: 'Berg Balance Scale',       unit: '/ 56',  placeholder: '0–56',       hasNotes: true  },
+  { id: 'walk10m', label: '10-Meter Walk Test',        unit: 'sec',   placeholder: 'seconds',    hasNotes: true  },
+  { id: 'walk6min',label: '6-Minute Walk Test',        unit: 'm',     placeholder: 'meters',     hasNotes: false },
+  { id: 'sls',     label: 'Single Leg Stance',         unit: 'sec',   placeholder: 'sec',        twoSided: true  },
+  { id: 'nrs',     label: 'Pain Scale (NRS)',           unit: '/ 10',  placeholder: '0–10',       hasNotes: true  },
+  { id: 'dgi',     label: 'Dynamic Gait Index (DGI)',  unit: '/ 24',  placeholder: '0–24',       hasNotes: false },
+  { id: 'chair30', label: '30-Second Chair Stand',     unit: 'reps',  placeholder: 'repetitions',hasNotes: false },
+  { id: 'barthel', label: 'Barthel Index',             unit: '/ 100', placeholder: '0–100',      hasNotes: false },
+  { id: 'tinetti', label: 'Tinetti Balance',           unit: '/ 28',  placeholder: '0–28',       hasNotes: false },
+  { id: 'fma',     label: 'Fugl-Meyer Assessment',     unit: '/ 226', placeholder: '0–226',      hasNotes: false },
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MMTRow {
@@ -124,7 +159,8 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
   const [prognosis, setPrognosis] = useState<SOAPNote['prognosis']>('good');
 
   // ── Objective fields ─────────────────────────────────────────────────────
-  const [areaInspected, setAreaInspected] = useState('');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [showAreaDropdown, setShowAreaDropdown] = useState(false);
   const [dxImaging, setDxImaging] = useState('');
   const [postureNotes, setPostureNotes] = useState('');
   const [palpationNotes, setPalpationNotes] = useState('');
@@ -136,6 +172,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
   const [fssNotes, setFssNotes] = useState('');
   const [gripLeft, setGripLeft] = useState('');
   const [gripRight, setGripRight] = useState('');
+  const [extraMeasures, setExtraMeasures] = useState<Record<string, string>>({});
 
   // ── MMT Table ────────────────────────────────────────────────────────────
   const [mmtData, setMmtData] = useState<Record<string, MMTRow>>(() =>
@@ -192,7 +229,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           setSubjective(note.subjective_text || '');
           setAssessment(note.assessment_text || '');
           setPrognosis(note.prognosis || 'good');
-          setAreaInspected(note.area_inspected || '');
+          if (note.area_inspected) setSelectedAreas(note.area_inspected.split(', ').filter(Boolean));
           setDxImaging(note.dx_imaging || '');
           setPostureNotes(note.posture_notes || '');
           setPalpationNotes(note.palpation_notes || '');
@@ -200,6 +237,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           setTugNotes(note.tug_test_notes || '');
           setFssValue(note.five_sit_stand_value || '');
           setFssNotes(note.five_sit_stand_notes || '');
+          if (note.functional_measures_json) setExtraMeasures(JSON.parse(note.functional_measures_json));
           setGaitDescription(note.gait_description || '');
           setAssistiveDevice(note.assistive_device || 'None');
           if (note.gait_deviations) setGaitDeviations(JSON.parse(note.gait_deviations));
@@ -272,12 +310,18 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       const now = new Date().toISOString();
 
       // Compile objective text for printable output
+      const extraMeasuresText = EXTRA_MEASURES
+        .filter(m => m.twoSided ? extraMeasures[`${m.id}_r`] || extraMeasures[`${m.id}_l`] : extraMeasures[m.id])
+        .map(m => m.twoSided
+          ? `  ${m.label}: R ${extraMeasures[`${m.id}_r`] || '—'} sec | L ${extraMeasures[`${m.id}_l`] || '—'} sec`
+          : `  ${m.label}: ${extraMeasures[m.id]} ${m.unit}${extraMeasures[`${m.id}_notes`] ? ` – ${extraMeasures[`${m.id}_notes`]}` : ''}`)
+        .join('\n');
       const objectiveText = [
-        areaInspected && `Area to be inspected: ${areaInspected}`,
+        selectedAreas.length > 0 && `Area to be inspected: ${selectedAreas.join(', ')}`,
         dxImaging && `Dx Imaging: ${dxImaging}`,
         postureNotes && `Posture/Position:\n${postureNotes}`,
         palpationNotes && `Palpation: ${palpationNotes}`,
-        `Functional Measures:\n  TUG Test: ${tugValue ? `${tugValue} sec${tugNotes ? ` – ${tugNotes}` : ''}` : 'Not performed'}\n  Five Times Sit-to-Stand: ${fssValue || 'Not performed'}${fssNotes ? ` – ${fssNotes}` : ''}\n  Grip Strength: L ${gripLeft || '—'} lbs, R ${gripRight || '—'} lbs`,
+        `Functional Measures:\n  TUG Test: ${tugValue ? `${tugValue} sec${tugNotes ? ` – ${tugNotes}` : ''}` : 'Not performed'}\n  Five Times Sit-to-Stand: ${fssValue || 'Not performed'}${fssNotes ? ` – ${fssNotes}` : ''}\n  Grip Strength: L ${gripLeft || '—'} lbs, R ${gripRight || '—'} lbs${extraMeasuresText ? '\n' + extraMeasuresText : ''}`,
         'AROM & MMT:\n' + MMT_MUSCLE_GROUPS.map(g => {
           const row = mmtData[g.name];
           if (!row.r_mmt && !row.l_mmt) return null;
@@ -306,7 +350,8 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
         assessment_text: assessment,
         plan_text: planText,
         prognosis,
-        area_inspected: areaInspected,
+        area_inspected: selectedAreas.join(', '),
+        functional_measures_json: JSON.stringify(extraMeasures),
         dx_imaging: dxImaging,
         posture_notes: postureNotes,
         palpation_notes: palpationNotes,
@@ -758,7 +803,43 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={label}>Area to be Inspected</label>
-              <input type="text" value={areaInspected} onChange={e => setAreaInspected(e.target.value)} className={input} placeholder="e.g., L+ hemiparesis and general conditioning" />
+              {/* selected chips */}
+              {selectedAreas.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {selectedAreas.map(a => (
+                    <span key={a} className="inline-flex items-center gap-1 bg-teal-100 text-teal-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                      {a}
+                      <button onClick={() => setSelectedAreas(prev => prev.filter(x => x !== a))} className="text-teal-500 hover:text-teal-700">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* dropdown toggle */}
+              <div className="relative">
+                <button type="button" onClick={() => setShowAreaDropdown(p => !p)}
+                  className="w-full text-left p-2 border border-gray-300 rounded-md text-sm bg-white flex justify-between items-center focus:ring-2 focus:ring-teal-500">
+                  <span className={selectedAreas.length === 0 ? 'text-gray-400' : 'text-gray-700'}>
+                    {selectedAreas.length === 0 ? 'Select body areas…' : `${selectedAreas.length} area(s) selected`}
+                  </span>
+                  <span className="text-gray-400">{showAreaDropdown ? '▲' : '▼'}</span>
+                </button>
+                {showAreaDropdown && (
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                    {AREA_OPTIONS.map(area => (
+                      <label key={area} className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox"
+                          checked={selectedAreas.includes(area)}
+                          onChange={() => setSelectedAreas(prev =>
+                            prev.includes(area) ? prev.filter(x => x !== area) : [...prev, area]
+                          )}
+                          className="h-3.5 w-3.5 text-teal-600 border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-gray-700">{area}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className={label}>Dx Imaging</label>
@@ -813,6 +894,47 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* ── Additional Functional Measures ───────────────────────── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              {EXTRA_MEASURES.map(m => (
+                <div key={m.id} className="border border-gray-200 rounded-lg p-3">
+                  <label className={label}>{m.label}</label>
+                  {m.twoSided ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-xs text-gray-500 mb-1 block">Right (sec)</span>
+                        <input type="number" step="0.1"
+                          value={extraMeasures[`${m.id}_r`] || ''}
+                          onChange={e => setExtraMeasures(prev => ({ ...prev, [`${m.id}_r`]: e.target.value }))}
+                          className={input} placeholder={m.placeholder} />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-500 mb-1 block">Left (sec)</span>
+                        <input type="number" step="0.1"
+                          value={extraMeasures[`${m.id}_l`] || ''}
+                          onChange={e => setExtraMeasures(prev => ({ ...prev, [`${m.id}_l`]: e.target.value }))}
+                          className={input} placeholder={m.placeholder} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input type="number" step="0.1"
+                        value={extraMeasures[m.id] || ''}
+                        onChange={e => setExtraMeasures(prev => ({ ...prev, [m.id]: e.target.value }))}
+                        className="flex-1 p-2 border border-gray-300 rounded text-sm" placeholder={m.placeholder} />
+                      <span className="flex items-center text-xs text-gray-500 whitespace-nowrap px-1">{m.unit}</span>
+                    </div>
+                  )}
+                  {m.hasNotes && (
+                    <input type="text"
+                      value={extraMeasures[`${m.id}_notes`] || ''}
+                      onChange={e => setExtraMeasures(prev => ({ ...prev, [`${m.id}_notes`]: e.target.value }))}
+                      className={`${input} mt-1`} placeholder="Notes / observations" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
