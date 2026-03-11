@@ -213,7 +213,7 @@ export function TimeClock() {
           </div>
           <div className="text-right">
             <div className="text-3xl font-mono font-bold text-gray-900">
-              {formatTime(currentTime.toISOString())}
+              {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true })}
             </div>
             <div className="text-sm text-gray-600">Current Time</div>
           </div>
