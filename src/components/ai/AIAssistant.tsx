@@ -168,8 +168,8 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
       const reply = data.content as string;
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
       if (speakEnabled) speak(reply);
-    } catch (err: any) {
-      const errMsg = `Error: ${err?.message || 'Unknown error'}`;
+    } catch {
+      const errMsg = 'Sorry, I had trouble connecting. Please try again in a moment.';
       setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
       if (speakEnabled) speak(errMsg);
     } finally {
