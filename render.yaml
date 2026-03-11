@@ -5,10 +5,12 @@ services:
     env: node
     plan: pro # Included in Professional account
     buildCommand: npm install && npm run build
-    startCommand: npm run preview
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: ANTHROPIC_API_KEY
+        sync: false # Set manually in dashboard
       - key: VITE_APP_URL
         fromService:
           type: web

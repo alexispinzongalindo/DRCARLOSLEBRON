@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 
 interface Message {
@@ -61,14 +60,17 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
         activePatients,
       };
 
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: {
+      const res = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
           context,
-        },
+        }),
       });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
     } catch (err) {
