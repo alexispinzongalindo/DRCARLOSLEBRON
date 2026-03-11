@@ -118,7 +118,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
             {formatDate(new Date().toISOString())} • {staff?.role?.replace('_', ' ').toUpperCase()}
           </p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3">
           <Button variant="outline" onClick={() => onNavigate?.('new-patient')}>
             New Patient
           </Button>

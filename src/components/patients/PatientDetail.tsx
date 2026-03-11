@@ -174,18 +174,18 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex overflow-x-auto px-2 sm:px-6 scrollbar-hide">
             {[
               { id: 'overview', label: 'Overview' },
-              { id: 'appointments', label: `Appointments (${appointments.length})` },
+              { id: 'appointments', label: `Appts (${appointments.length})` },
               { id: 'encounters', label: `Encounters (${encounters.length})` },
-              { id: 'evaluations', label: 'Evaluations & Records' },
-              { id: 'notes', label: 'Clinical Notes' }
+              { id: 'evaluations', label: 'Evaluations' },
+              { id: 'notes', label: 'Notes' }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
