@@ -160,6 +160,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
   const [duration, setDuration] = useState('12 treatments');
   const [treatmentGoals, setTreatmentGoals] = useState(['', '', '']);
   const [selectedCPTCodes, setSelectedCPTCodes] = useState<Record<string, string[]>>({});
+  const [cptSearch, setCptSearch] = useState('');
 
   // ── ICD-10 search filter ─────────────────────────────────────────────────
   const filteredICD10 = useMemo(() => {
@@ -480,6 +481,17 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       [code]: prev[code]?.includes(proto) ? prev[code].filter(p => p !== proto) : [...(prev[code] || []), proto],
     }));
   };
+
+  // ── CPT search filter ────────────────────────────────────────────────────
+  const filteredCPTCodes = useMemo(() => {
+    const q = cptSearch.toLowerCase().trim();
+    if (!q) return CPT_CODES;
+    return CPT_CODES.filter(c =>
+      c.code.toLowerCase().includes(q) ||
+      c.description.toLowerCase().includes(q) ||
+      c.category.toLowerCase().includes(q)
+    );
+  }, [cptSearch]);
 
   // ── Section nav ──────────────────────────────────────────────────────────
   const sections = [
@@ -1054,8 +1066,28 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
           {/* CPT Codes */}
           <div>
             <label className={label}>CPT Codes &amp; Protocols</label>
-            <div className="space-y-3">
-              {CPT_CODES.map(cpt => {
+            {/* selected badges */}
+            {Object.keys(selectedCPTCodes).length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {Object.keys(selectedCPTCodes).map(code => (
+                  <span key={code} className="inline-flex items-center gap-1 bg-teal-100 text-teal-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                    {code}
+                    <button onClick={() => toggleCPT(code)} className="text-teal-500 hover:text-teal-700">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* search */}
+            <input
+              type="text"
+              value={cptSearch}
+              onChange={e => setCptSearch(e.target.value)}
+              placeholder="Search CPT code or description..."
+              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm mb-2 focus:outline-none focus:ring-1 focus:ring-teal-400"
+            />
+            <p className="text-xs text-gray-400 mb-2">{filteredCPTCodes.length} code{filteredCPTCodes.length !== 1 ? 's' : ''} shown</p>
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+              {filteredCPTCodes.map(cpt => {
                 const isSelected = !!selectedCPTCodes[cpt.code];
                 return (
                   <div key={cpt.code} className={`border rounded-lg p-3 transition-colors ${isSelected ? 'border-teal-300 bg-teal-50/40' : 'border-gray-200'}`}>

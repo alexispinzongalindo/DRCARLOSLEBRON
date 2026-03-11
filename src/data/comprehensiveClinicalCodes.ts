@@ -195,11 +195,34 @@ export const COMPREHENSIVE_CPT_CODES: CPTCode[] = [
     ]
   },
   {
-    code: "97118",
-    description: "Therapeutic Activity",
+    code: "97150",
+    description: "Therapeutic Exercise (Group)",
+    category: "Therapeutic Procedures",
+    specialty: ["Orthopedic", "Neurologic", "Geriatric", "Cardiopulmonary"],
+    conditions: ["Group rehabilitation", "Cardiac rehab", "Pulmonary rehab", "Fall prevention"],
+    protocols: [
+      {
+        name: "Group Strengthening",
+        sets: "2-3 sets",
+        reps: "10-15 reps",
+        description: "Supervised group exercise for strengthening",
+        equipment: "Resistance bands, light weights"
+      },
+      {
+        name: "Group Balance/Fall Prevention",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Group balance and fall prevention program",
+        equipment: "Balance pads, chairs for safety"
+      }
+    ]
+  },
+  {
+    code: "97530",
+    description: "Therapeutic Activities",
     category: "Therapeutic Procedures",
     specialty: ["Orthopedic", "Neurologic", "Pediatric", "Sports"],
-    conditions: ["Work injuries", "ADL deficits", "Sport-specific needs"],
+    conditions: ["Work injuries", "ADL deficits", "Sport-specific needs", "Functional deficits"],
     protocols: [
       {
         name: "Work Simulation",
@@ -221,6 +244,96 @@ export const COMPREHENSIVE_CPT_CODES: CPTCode[] = [
         reps: "Task repetition",
         description: "Activities of daily living practice",
         equipment: "ADL simulation equipment, household items"
+      },
+      {
+        name: "Functional Task Training",
+        sets: "Multiple",
+        reps: "10-20 reps",
+        description: "Dynamic activities using multiple body parts",
+        progression: "Assisted → independent, simple → complex tasks"
+      }
+    ]
+  },
+  {
+    code: "97535",
+    description: "Self-Care / Home Management Training",
+    category: "Therapeutic Procedures",
+    specialty: ["Neurologic", "Orthopedic", "Geriatric"],
+    conditions: ["CVA", "TBI", "Post-surgical", "Functional decline"],
+    protocols: [
+      {
+        name: "ADL Retraining",
+        sets: "Multiple",
+        reps: "Task repetition",
+        description: "Retraining dressing, grooming, bathing, toileting",
+        equipment: "Adaptive equipment as needed"
+      },
+      {
+        name: "Home Safety Assessment & Training",
+        sets: "1 session",
+        reps: "Throughout",
+        description: "Home environment modification and safety training",
+        equipment: "Grab bars, raised toilet seat, shower chair"
+      },
+      {
+        name: "Energy Conservation Techniques",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Pacing and energy conservation for daily tasks",
+        equipment: "None"
+      }
+    ]
+  },
+  {
+    code: "97537",
+    description: "Community / Work Reintegration Training",
+    category: "Therapeutic Procedures",
+    specialty: ["Neurologic", "Orthopedic", "Geriatric"],
+    conditions: ["CVA", "TBI", "Return to work", "Community reintegration"],
+    protocols: [
+      {
+        name: "Community Mobility Training",
+        sets: "Multiple",
+        reps: "Task-specific",
+        description: "Navigation of community environments, public transit",
+        equipment: "Assistive device as needed"
+      },
+      {
+        name: "Work Task Simulation",
+        sets: "Multiple",
+        reps: "Task-specific",
+        description: "Simulation of specific work tasks and demands",
+        equipment: "Work simulation tools"
+      }
+    ]
+  },
+  {
+    code: "97542",
+    description: "Wheelchair Management Training",
+    category: "Therapeutic Procedures",
+    specialty: ["Neurologic", "Spinal Cord", "Geriatric"],
+    conditions: ["SCI", "CVA", "Amputations", "Progressive neurological conditions"],
+    protocols: [
+      {
+        name: "Manual Wheelchair Propulsion",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Propulsion technique, turning, maneuvering",
+        equipment: "Manual wheelchair"
+      },
+      {
+        name: "Power Wheelchair Operation",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Joystick control, obstacle navigation",
+        equipment: "Power wheelchair"
+      },
+      {
+        name: "Wheelchair Pressure Relief",
+        sets: "Every 15-30 min",
+        reps: "30-60 second holds",
+        description: "Pressure relief techniques to prevent skin breakdown",
+        equipment: "Wheelchair"
       }
     ]
   },
@@ -253,6 +366,212 @@ export const COMPREHENSIVE_CPT_CODES: CPTCode[] = [
         reps: "2-5 minutes per area", 
         description: "Sustained pressure to fascial restrictions",
         equipment: "Hands, foam rollers, tools"
+      }
+    ]
+  },
+
+  // COGNITIVE / FUNCTIONAL
+  {
+    code: "97129",
+    description: "Therapeutic Interventions for Cognitive Function (first 15 min)",
+    category: "Therapeutic Procedures",
+    specialty: ["Neurologic", "Geriatric", "Pediatric"],
+    conditions: ["TBI", "CVA", "Dementia", "Cognitive impairment"],
+    protocols: [
+      {
+        name: "Attention & Concentration Training",
+        sets: "Multiple",
+        reps: "10-15 min tasks",
+        description: "Structured tasks targeting sustained and divided attention",
+        equipment: "Cognitive training tools, computer programs"
+      },
+      {
+        name: "Memory Strategies Training",
+        sets: "Multiple",
+        reps: "Session-long",
+        description: "Compensatory memory techniques and external aids",
+        equipment: "Memory aids, calendars, whiteboards"
+      },
+      {
+        name: "Executive Function Training",
+        sets: "Multiple",
+        reps: "Task-specific",
+        description: "Planning, problem-solving, and sequencing tasks",
+        equipment: "Structured activities, task boards"
+      }
+    ]
+  },
+  {
+    code: "97130",
+    description: "Therapeutic Interventions for Cognitive Function (each add'l 15 min)",
+    category: "Therapeutic Procedures",
+    specialty: ["Neurologic", "Geriatric", "Pediatric"],
+    conditions: ["TBI", "CVA", "Dementia", "Cognitive impairment"],
+    protocols: [
+      {
+        name: "Continued Cognitive Training",
+        sets: "Continued",
+        reps: "Each additional 15 min",
+        description: "Continuation of cognitive intervention beyond initial 15 min",
+        equipment: "Cognitive training tools"
+      }
+    ]
+  },
+
+  // WORK HARDENING / CONDITIONING
+  {
+    code: "97545",
+    description: "Work Hardening / Conditioning (first 2 hrs)",
+    category: "Work Rehabilitation",
+    specialty: ["Orthopedic", "Sports", "Occupational"],
+    conditions: ["Work-related injuries", "Return to work", "Musculoskeletal conditions"],
+    protocols: [
+      {
+        name: "Work Hardening Program",
+        sets: "Multiple",
+        reps: "2-hour session",
+        description: "Intensive work simulation and conditioning program",
+        equipment: "Work simulation equipment, tools"
+      },
+      {
+        name: "Functional Capacity Building",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Gradually increasing work demands to match job requirements",
+        progression: "Low demand → full job demands"
+      }
+    ]
+  },
+  {
+    code: "97546",
+    description: "Work Hardening / Conditioning (each add'l hour)",
+    category: "Work Rehabilitation",
+    specialty: ["Orthopedic", "Sports", "Occupational"],
+    conditions: ["Work-related injuries", "Return to work"],
+    protocols: [
+      {
+        name: "Extended Work Hardening",
+        sets: "Continued",
+        reps: "Each additional hour",
+        description: "Continuation of work hardening beyond initial 2 hours",
+        equipment: "Work simulation equipment"
+      }
+    ]
+  },
+
+  // ASSESSMENT / TESTING
+  {
+    code: "97750",
+    description: "Physical Performance Test or Measurement",
+    category: "Evaluation and Management",
+    specialty: ["All specialties"],
+    conditions: ["Functional assessment", "Outcome measurement", "Return to sport/work"],
+    protocols: [
+      {
+        name: "Functional Movement Screen (FMS)",
+        sets: "1 session",
+        reps: "7 movement patterns",
+        description: "Standardized movement screen for functional deficits",
+        equipment: "FMS kit"
+      },
+      {
+        name: "Timed Up & Go (TUG)",
+        sets: "3 trials",
+        reps: "1 each",
+        description: "Timed mobility and balance assessment",
+        equipment: "Chair, measured path"
+      },
+      {
+        name: "6-Minute Walk Test",
+        sets: "1 trial",
+        reps: "6 minutes",
+        description: "Endurance and functional walking assessment",
+        equipment: "Measured course, timer"
+      },
+      {
+        name: "Berg Balance Scale",
+        sets: "1 session",
+        reps: "14 items",
+        description: "Standardized balance assessment",
+        equipment: "Chair, step, ruler"
+      }
+    ]
+  },
+
+  // ORTHOTIC / PROSTHETIC
+  {
+    code: "97760",
+    description: "Orthotic Management & Training (initial encounter)",
+    category: "Orthotic/Prosthetic",
+    specialty: ["Orthopedic", "Neurologic", "Pediatric"],
+    conditions: ["Foot drop", "Joint instability", "Post-surgical", "Neurological conditions"],
+    protocols: [
+      {
+        name: "AFO Fit & Gait Training",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Initial fitting and gait training with ankle-foot orthosis",
+        equipment: "AFO, appropriate footwear"
+      },
+      {
+        name: "Orthotic Wear Schedule Education",
+        sets: "1 session",
+        reps: "Education",
+        description: "Patient/caregiver education on wear schedule and skin checks",
+        equipment: "Handouts, orthotic device"
+      }
+    ]
+  },
+  {
+    code: "97761",
+    description: "Prosthetic Training (initial encounter)",
+    category: "Orthotic/Prosthetic",
+    specialty: ["Orthopedic", "Vascular"],
+    conditions: ["Lower extremity amputation", "Upper extremity amputation"],
+    protocols: [
+      {
+        name: "Prosthetic Donning/Doffing",
+        sets: "Multiple",
+        reps: "10+ reps",
+        description: "Instruction in proper prosthetic application and removal",
+        equipment: "Prosthetic limb, liner, sock system"
+      },
+      {
+        name: "Prosthetic Gait Training",
+        sets: "Multiple",
+        reps: "25-200 feet",
+        description: "Gait training with prosthetic device",
+        progression: "Parallel bars → assistive device → independent"
+      },
+      {
+        name: "Residual Limb Care & Skin Inspection",
+        sets: "1 session",
+        reps: "Education",
+        description: "Skin care, sock management, and limb hygiene training",
+        equipment: "Mirror, skin care products"
+      }
+    ]
+  },
+  {
+    code: "97763",
+    description: "Orthotic/Prosthetic Management (subsequent encounter)",
+    category: "Orthotic/Prosthetic",
+    specialty: ["Orthopedic", "Neurologic", "Vascular"],
+    conditions: ["Ongoing orthotic/prosthetic use"],
+    protocols: [
+      {
+        name: "Orthotic/Prosthetic Gait Refinement",
+        sets: "Multiple",
+        reps: "Throughout session",
+        description: "Advanced gait training and device use optimization",
+        progression: "Even surfaces → uneven terrain, stairs, ramps"
+      },
+      {
+        name: "Problem Solving & Device Adjustment",
+        sets: "1 session",
+        reps: "As needed",
+        description: "Address fit issues, skin breakdown, functional limitations",
+        equipment: "Device, tools for minor adjustment"
       }
     ]
   },
