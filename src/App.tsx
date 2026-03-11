@@ -18,6 +18,7 @@ import { StaffDetail } from './components/staff/StaffDetail';
 import { PayrollList } from './components/payroll/PayrollList';
 import { PayrollDetail } from './components/payroll/PayrollDetail';
 import { seedDemoData } from './db/seedDemo';
+import { Training } from './components/training/Training';
 import type { Patient } from './db/dexie';
 
 function App() {
@@ -228,6 +229,8 @@ function AppContent() {
         ) : (
           <PayrollList onNavigate={navigateTo} />
         );
+      case 'training':
+        return <Training />;
       case 'time-clock':
         return <TimeClock />;
       case 'reminders':
