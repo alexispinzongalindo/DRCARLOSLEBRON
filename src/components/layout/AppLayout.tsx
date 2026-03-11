@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { Button } from '../shared/Button';
 import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { AIAssistant } from '../ai/AIAssistant';
 
 
 interface AppLayoutProps {
@@ -101,6 +102,8 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
       <main className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
         {children}
       </main>
+
+      <AIAssistant currentPage={currentPage} />
 
       {/* Session Timeout Warning */}
       {isSessionExpired() && (
