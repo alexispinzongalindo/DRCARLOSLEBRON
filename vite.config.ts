@@ -40,7 +40,7 @@ export default defineConfig({
         name: 'Optimum Therapy PT Practice Management',
         short_name: 'OptimumPT',
         description: 'HIPAA-compliant, offline-first physical therapy practice management system',
-        theme_color: '#3B82F6',
+        theme_color: '#0d9488',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
