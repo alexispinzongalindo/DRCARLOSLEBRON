@@ -18,6 +18,7 @@ import { StaffDetail } from './components/staff/StaffDetail';
 import { PayrollList } from './components/payroll/PayrollList';
 import { PayrollDetail } from './components/payroll/PayrollDetail';
 import { seedDemoData } from './db/seedDemo';
+import type { Patient } from './db/dexie';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -75,6 +76,7 @@ function AppContent() {
   const [pageParams, setPageParams] = useState<Record<string, string>>({});
   const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
 
   const navigateTo = (page: string, params?: Record<string, string>) => {
@@ -90,9 +92,10 @@ function AppContent() {
     switch (currentPage) {
       case 'patients':
         return (
-          <PatientList 
+          <PatientList
             onSelectPatient={(patient) => {
               setSelectedPatientId(patient.id!);
+              setSelectedPatient(patient);
               setCurrentPage('patient-detail');
             }}
             onNewPatient={() => setCurrentPage('new-patient')}
@@ -151,7 +154,13 @@ function AppContent() {
         return selectedPatientId ? (
           <PatientDetail
             patientId={selectedPatientId}
-            onEdit={() => setCurrentPage('edit-patient')}
+            onEdit={async () => {
+              if (selectedPatientId) {
+                const fresh = await db.patients.get(selectedPatientId);
+                if (fresh) setSelectedPatient(fresh);
+              }
+              setCurrentPage('edit-patient');
+            }}
             onClose={() => setCurrentPage('patients')}
             onScheduleAppointment={() => setCurrentPage('new-appointment')}
             onCreateEncounter={async () => {
@@ -181,11 +190,11 @@ function AppContent() {
           <PatientList />
         );
       case 'edit-patient':
-        return selectedPatientId ? (
+        return selectedPatient ? (
           <PatientRegistrationForm
-            existingPatient={undefined} // TODO: Load patient by ID
+            existingPatient={selectedPatient}
             onSave={(patient) => {
-              console.log('Patient updated:', patient);
+              setSelectedPatient(patient);
               setCurrentPage('patient-detail');
             }}
             onCancel={() => setCurrentPage('patient-detail')}
