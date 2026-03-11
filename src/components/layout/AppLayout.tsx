@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
 import { OptimumTherapyLogo } from '../shared/OptimumTherapyLogo';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,26 +12,13 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: AppLayoutProps) {
   const { staff, signOut, updateLastActivity, isSessionExpired } = useAuthStore();
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'pending' | 'offline'>('synced');
-  const [syncCount, setSyncCount] = useState(0);
+  const network = useNetworkStatus();
 
   useEffect(() => {
     // Check session expiration every minute
     const sessionCheck = setInterval(() => {
-      if (isSessionExpired()) {
-        signOut();
-      }
+      if (isSessionExpired()) signOut();
     }, 60000);
-
-    // Update sync status
-    const updateSyncStatus = async () => {
-      const count = await db.getSyncQueueCount();
-      setSyncCount(count);
-      setSyncStatus(count > 0 ? 'pending' : navigator.onLine ? 'synced' : 'offline');
-    };
-
-    updateSyncStatus();
-    const syncInterval = setInterval(updateSyncStatus, 30000);
 
     // Track user activity
     const handleActivity = () => updateLastActivity();
@@ -40,29 +27,10 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
 
     return () => {
       clearInterval(sessionCheck);
-      clearInterval(syncInterval);
       document.removeEventListener('mousedown', handleActivity);
       document.removeEventListener('keydown', handleActivity);
     };
   }, [isSessionExpired, signOut, updateLastActivity]);
-
-  const getSyncStatusColor = () => {
-    switch (syncStatus) {
-      case 'synced': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'offline': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getSyncStatusText = () => {
-    switch (syncStatus) {
-      case 'synced': return 'Synced';
-      case 'pending': return `${syncCount} pending`;
-      case 'offline': return `Offline (${syncCount} queued)`;
-      default: return 'Unknown';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,8 +44,8 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
             <div className="flex items-center space-x-4">
               {/* Sync Status */}
               <div className="flex items-center space-x-1.5">
-                <div className={`w-2 h-2 rounded-full ${getSyncStatusColor()}`} />
-                <span className="text-xs text-gray-500">{getSyncStatusText()}</span>
+                <div className={`w-2 h-2 rounded-full ${network.color}`} />
+                <span className="text-xs text-gray-500">{network.label}</span>
               </div>
               {/* User */}
               <div className="text-sm text-gray-700 text-right">

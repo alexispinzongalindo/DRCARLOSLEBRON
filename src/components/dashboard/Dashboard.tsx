@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
 import { formatDate, formatTime } from '../../lib/utils';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import type { Patient, Appointment, Encounter } from '../../db/dexie';
 
 interface AppointmentWithPatient extends Appointment {
@@ -21,6 +22,7 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: DashboardProps = {}) {
   const { staff } = useAuthStore();
+  const network = useNetworkStatus();
   const [todaysAppointments, setTodaysAppointments] = useState<AppointmentWithPatient[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
   const [pendingNotes, setPendingNotes] = useState<EncounterWithPatient[]>([]);
@@ -187,7 +189,7 @@ export function Dashboard({ onNavigate, onCompleteNote, onViewPatient }: Dashboa
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Sync Status</p>
-              <p className="text-sm font-semibold text-green-600">Online</p>
+              <p className={`text-sm font-semibold ${network.textColor}`}>{network.label}</p>
             </div>
           </div>
         </div>
