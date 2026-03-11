@@ -507,6 +507,29 @@ function OptimumAISection() {
 
       <Tip>You can use voice input in English or Spanish. Just click the mic and speak naturally.</Tip>
 
+      <h3 className="font-semibold text-gray-800 text-lg mb-3 mt-6">Text-to-Speech — Oral Training</h3>
+      <Step number={1} title="Find the speaker button in the AI header">
+        <p>When the AI chat is open, look at the <strong>teal header bar</strong>. There is a <strong>speaker icon</strong> (🔊) on the right side of the header.</p>
+      </Step>
+      <Step number={2} title="Click the speaker to enable Voice Output">
+        <p>The button turns <strong>white</strong> to indicate voice is ON. From this point, every AI response will be <strong>read aloud automatically</strong> as soon as it arrives.</p>
+      </Step>
+      <Step number={3} title="Listen to the training">
+        <p>Ask the AI to train you on any topic. It will speak the full step-by-step walkthrough aloud while you follow along on screen.</p>
+      </Step>
+      <Step number={4} title="Re-read any message">
+        <p>Below every AI message you will see a small <strong>🔊 Read aloud</strong> link. Click it to replay that specific response at any time.</p>
+      </Step>
+      <Step number={5} title="Mute voice output">
+        <p>Click the speaker button again to turn voice OFF. The button returns to its gray/dim state.</p>
+      </Step>
+
+      <Card title="Training Mode — this page" color="teal">
+        <p>When you are on the <strong>Training</strong> page, OptimumAI automatically enters <strong>Training Mode</strong>.
+        You will see a green pulsing dot and the label "Training Mode Active" in the AI header.
+        In this mode the AI provides longer, more detailed visual walkthroughs — describing exactly what you will see on screen and what to click.</p>
+      </Card>
+
       <h3 className="font-semibold text-gray-800 text-lg mb-4 mt-6">All Tasks OptimumAI Can Help With</h3>
 
       <AITask category="Patient Information & Records" tasks={[
@@ -643,6 +666,99 @@ function OptimumAISection() {
   );
 }
 
+// ─── AI TRAINING BANNER ──────────────────────────────────────────────────────
+
+const AI_TOPICS = [
+  { emoji: '🏠', label: 'Dashboard',    desc: 'Walk me through the dashboard' },
+  { emoji: '👥', label: 'Patients',     desc: 'Train me on patient management' },
+  { emoji: '📅', label: 'Appointments', desc: 'Show me the appointments calendar' },
+  { emoji: '⏱',  label: 'Time Clock',  desc: 'Explain how to clock in and out' },
+  { emoji: '🔔', label: 'Reminders',   desc: 'How do I send patient reminders?' },
+  { emoji: '💰', label: 'Payroll',     desc: 'Walk me through generating payroll' },
+  { emoji: '🤖', label: 'OptimumAI',  desc: 'Train me on all AI features' },
+];
+
+function AITrainingBanner() {
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyPrompt = (text: string, label: string) => {
+    navigator.clipboard.writeText(`Train me on ${label} — give me a complete visual and oral step-by-step walkthrough.`);
+    setCopied(label);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  return (
+    <div className="mb-6 rounded-xl overflow-hidden border border-teal-200 shadow-sm">
+      {/* Banner header */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-base">OptimumAI Training Mode is Active on This Page</h3>
+            <p className="text-teal-100 text-xs mt-0.5">
+              The AI assistant (💡 bottom-right) is in Training Mode — it provides full visual &amp; oral step-by-step walkthroughs.
+              Enable the 🔊 speaker button to hear responses read aloud.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Topic quick-start */}
+      <div className="bg-teal-50 px-5 py-4">
+        <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-3">
+          Quick Start — Click a topic, then open the AI assistant (💡) and paste or type it:
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {AI_TOPICS.map(t => (
+            <button
+              key={t.label}
+              onClick={() => copyPrompt(t.desc, t.label)}
+              className="flex items-center gap-2 bg-white border border-teal-200 rounded-lg px-3 py-2 text-left hover:bg-teal-100 hover:border-teal-400 transition-colors group"
+            >
+              <span className="text-lg flex-shrink-0">{t.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-teal-700 truncate">{t.label}</div>
+                <div className="text-xs text-gray-400 truncate group-hover:text-teal-600">
+                  {copied === t.label ? '✓ Copied!' : 'Click to copy prompt'}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Or just open the AI and type <em>"Train me on [any topic]"</em> — it knows this entire manual.
+          Use the <strong>🎤 mic button</strong> to speak your question instead of typing.
+        </p>
+      </div>
+
+      {/* How to use voice */}
+      <div className="bg-white px-5 py-3 border-t border-teal-100 flex flex-wrap gap-4 text-xs text-gray-600">
+        <div className="flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+          <span>Open AI (💡 bottom-right)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+          <span>Enable 🔊 speaker for oral training</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+          <span>Type or say <em>"Train me on Patients"</em></span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs flex-shrink-0">4</span>
+          <span>Follow the step-by-step walkthrough</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
 
 export function Training() {
@@ -663,37 +779,42 @@ export function Training() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-[80vh]">
-      {/* Sidebar */}
-      <aside className="lg:w-56 flex-shrink-0">
-        <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
-          <div className="bg-teal-600 px-4 py-3">
-            <h2 className="text-white font-semibold text-sm uppercase tracking-wide">Training</h2>
-            <p className="text-teal-200 text-xs">User Manual</p>
-          </div>
-          <nav className="p-2 space-y-0.5">
-            {NAV.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActive(item.id)}
-                className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                  active === item.id
-                    ? 'bg-teal-50 text-teal-700 font-semibold border border-teal-200'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <span className="text-base">{item.icon}</span>
-                <span className="leading-tight">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      </aside>
+    <div className="space-y-4">
+      {/* AI Training Banner — always visible on this page */}
+      <AITrainingBanner />
 
-      {/* Content */}
-      <main className="flex-1 bg-white rounded-xl shadow border border-gray-200 p-6 lg:p-8 overflow-y-auto">
-        {renderContent()}
-      </main>
+      <div className="flex flex-col lg:flex-row gap-6 min-h-[80vh]">
+        {/* Sidebar */}
+        <aside className="lg:w-56 flex-shrink-0">
+          <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+            <div className="bg-teal-600 px-4 py-3">
+              <h2 className="text-white font-semibold text-sm uppercase tracking-wide">Training</h2>
+              <p className="text-teal-200 text-xs">User Manual</p>
+            </div>
+            <nav className="p-2 space-y-0.5">
+              {NAV.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActive(item.id)}
+                  className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    active === item.id
+                      ? 'bg-teal-50 text-teal-700 font-semibold border border-teal-200'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span className="leading-tight">{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Content */}
+        <main className="flex-1 bg-white rounded-xl shadow border border-gray-200 p-6 lg:p-8 overflow-y-auto">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 }
