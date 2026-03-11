@@ -13,20 +13,32 @@ interface AIAssistantProps {
   activePatients?: number;
 }
 
+// Extend window type for SpeechRecognition
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
 export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activePatients }: AIAssistantProps) {
   const { staff } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  const hasSpeech = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
   useEffect(() => {
     if (open && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: `Hi ${staff?.first_name ?? 'there'}! I'm OptimumAI, your clinic assistant. I can help you draft SOAP notes, look up ICD-10 codes, answer questions about your schedule, or anything else clinic-related. How can I help?`
+        content: `Hi ${staff?.first_name ?? 'there'}! I'm OptimumAI, your clinic assistant. You can type or use the 🎤 mic button to speak. How can I help?`
       }]);
     }
   }, [open]);
@@ -38,6 +50,37 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  // Cleanup recognition on unmount
+  useEffect(() => {
+    return () => { recognitionRef.current?.stop(); };
+  }, []);
+
+  const startListening = () => {
+    if (!hasSpeech) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+    recognitionRef.current = recognition;
+    recognition.lang = 'en-US'; // supports Spanish too if user speaks Spanish
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setListening(true);
+    recognition.onend = () => setListening(false);
+    recognition.onerror = () => setListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(prev => (prev ? prev + ' ' + transcript : transcript));
+    };
+
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
 
   const send = async () => {
     const text = input.trim();
@@ -156,12 +199,29 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
 
           {/* Input */}
           <div className="p-3 border-t border-gray-200 bg-white flex gap-2 items-end">
+            {/* Mic button */}
+            {hasSpeech && (
+              <button
+                onClick={listening ? stopListening : startListening}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                  listening
+                    ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                }`}
+                title={listening ? 'Stop listening' : 'Speak'}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </button>
+            )}
             <textarea
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Ask anything..."
+              placeholder={listening ? 'Listening...' : 'Ask anything or tap 🎤'}
               rows={1}
               className="flex-1 resize-none border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               style={{ maxHeight: '100px' }}
