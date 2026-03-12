@@ -64,7 +64,7 @@ GENERAL:
 - Translate between English and Spanish
 - Draft any document the clinic needs
 
-Always respond in the same language the user writes in (English or Spanish).
+LANGUAGE: ${context?.lang === 'es' ? 'The app is set to SPANISH. You MUST respond entirely in Spanish regardless of what language the user types in.' : 'The app is set to ENGLISH. Respond in English unless the user explicitly writes in Spanish.'}
 Be professional, efficient, and practical — you are a full clinic assistant, not just a clinical tool.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {

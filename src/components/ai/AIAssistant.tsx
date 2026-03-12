@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/authStore';
+import { useLanguage } from '../../lib/i18n';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,16 +22,17 @@ declare global {
 }
 
 // ─── Text-to-speech helper ────────────────────────────────────────────────
-function speak(text: string) {
+function speak(text: string, lang: 'en' | 'es' = 'en') {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = 0.75;
   utterance.pitch = 1;
   utterance.volume = 1;
-  // Prefer an English voice if available
   const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.lang.startsWith('en') && v.localService);
+  const preferred = lang === 'es'
+    ? voices.find(v => v.lang.startsWith('es') && v.localService) ?? voices.find(v => v.lang.startsWith('es'))
+    : voices.find(v => v.lang.startsWith('en') && v.localService);
   if (preferred) utterance.voice = preferred;
   window.speechSynthesis.speak(utterance);
 }
@@ -40,19 +42,32 @@ function stopSpeaking() {
 }
 
 // ─── Quick-train topic buttons ────────────────────────────────────────────
-const TRAINING_TOPICS = [
-  { label: 'Dashboard',    prompt: 'Train me on the Dashboard — give me a complete visual walkthrough of every element.' },
-  { label: 'Patients',     prompt: 'Train me on Patients — walk me through registering a new patient, searching, and editing step by step.' },
-  { label: 'Appointments', prompt: 'Train me on Appointments — show me the calendar, how to schedule, and how to change appointment status.' },
-  { label: 'Time Clock',   prompt: 'Train me on the Time Clock — walk me through clocking in, breaks, and clocking out step by step.' },
-  { label: 'Reminders',    prompt: 'Train me on Reminders — explain every feature and show me how to send a reminder to a patient.' },
-  { label: 'Staff',        prompt: 'Train me on Staff management — how to add, edit, and deactivate staff members.' },
-  { label: 'Payroll',      prompt: 'Train me on Payroll — walk me through generating, approving, and paying a payroll cycle.' },
-  { label: 'OptimumAI',   prompt: 'Train me on how to use OptimumAI — all features including voice, text-to-speech, and training mode.' },
-];
+const TRAINING_TOPICS = {
+  en: [
+    { label: 'Dashboard',    prompt: 'Train me on the Dashboard — give me a complete visual walkthrough of every element.' },
+    { label: 'Patients',     prompt: 'Train me on Patients — walk me through registering a new patient, searching, and editing step by step.' },
+    { label: 'Appointments', prompt: 'Train me on Appointments — show me the calendar, how to schedule, and how to change appointment status.' },
+    { label: 'Time Clock',   prompt: 'Train me on the Time Clock — walk me through clocking in, breaks, and clocking out step by step.' },
+    { label: 'Reminders',    prompt: 'Train me on Reminders — explain every feature and show me how to send a reminder to a patient.' },
+    { label: 'Staff',        prompt: 'Train me on Staff management — how to add, edit, and deactivate staff members.' },
+    { label: 'Payroll',      prompt: 'Train me on Payroll — walk me through generating, approving, and paying a payroll cycle.' },
+    { label: 'OptimumAI',   prompt: 'Train me on how to use OptimumAI — all features including voice, text-to-speech, and training mode.' },
+  ],
+  es: [
+    { label: 'Panel',          prompt: 'Capacítame sobre el Panel — dame una guía visual completa de cada elemento.' },
+    { label: 'Pacientes',      prompt: 'Capacítame sobre Pacientes — guíame paso a paso para registrar, buscar y editar un paciente.' },
+    { label: 'Citas',          prompt: 'Capacítame sobre Citas — muéstrame el calendario, cómo programar y cómo cambiar el estado de una cita.' },
+    { label: 'Reloj',          prompt: 'Capacítame sobre el Reloj de Tiempo — guíame paso a paso para marcar entrada, descanso y salida.' },
+    { label: 'Recordatorios',  prompt: 'Capacítame sobre Recordatorios — explícame cada función y cómo enviar un recordatorio a un paciente.' },
+    { label: 'Personal',       prompt: 'Capacítame sobre gestión de Personal — cómo agregar, editar y desactivar miembros del personal.' },
+    { label: 'Nómina',         prompt: 'Capacítame sobre Nómina — guíame para generar, aprobar y pagar un ciclo de nómina.' },
+    { label: 'OptimumAI',      prompt: 'Capacítame sobre cómo usar OptimumAI — todas las funciones incluyendo voz, texto a voz y modo de capacitación.' },
+  ],
+};
 
 export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activePatients }: AIAssistantProps) {
   const { staff } = useAuthStore();
+  const { lang } = useLanguage();
   const [open, setOpen]             = useState(false);
   const [messages, setMessages]     = useState<Message[]>([]);
   const [input, setInput]           = useState('');
@@ -74,11 +89,16 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
   // ── Greeting on open ───────────────────────────────────────────────────
   useEffect(() => {
     if (open && messages.length === 0) {
-      const greeting = isTrainingPage
-        ? `Hi ${staff?.first_name ?? 'there'}! I'm OptimumAI. I'm in Training Mode — I can walk you through any part of the app step by step, visually and verbally. Pick a topic below or ask me anything!`
-        : `Hi ${staff?.first_name ?? 'there'}! I'm OptimumAI, your clinic assistant. Type or tap 🎤 to speak. How can I help?`;
+      const name = staff?.first_name ?? (lang === 'es' ? 'aquí' : 'there');
+      const greeting = lang === 'es'
+        ? isTrainingPage
+          ? `¡Hola ${name}! Soy OptimumAI. Estoy en Modo de Capacitación — puedo guiarle por cualquier parte de la aplicación paso a paso, visual y verbalmente. ¡Elija un tema abajo o pregúnteme lo que necesite!`
+          : `¡Hola ${name}! Soy OptimumAI, su asistente de clínica. Escriba o toque 🎤 para hablar. ¿En qué le puedo ayudar?`
+        : isTrainingPage
+          ? `Hi ${name}! I'm OptimumAI. I'm in Training Mode — I can walk you through any part of the app step by step, visually and verbally. Pick a topic below or ask me anything!`
+          : `Hi ${name}! I'm OptimumAI, your clinic assistant. Type or tap 🎤 to speak. How can I help?`;
       setMessages([{ role: 'assistant', content: greeting }]);
-      if (speakEnabled) speak(greeting);
+      if (speakEnabled) speak(greeting, lang);
     }
   }, [open]);
 
@@ -111,7 +131,7 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SR();
     recognitionRef.current = recognition;
-    recognition.lang = 'en-US';
+    recognition.lang = lang === 'es' ? 'es-PR' : 'en-US';
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.onstart  = () => setListening(true);
@@ -146,11 +166,12 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
         userName: `${staff?.first_name} ${staff?.last_name}`,
         userRole: staff?.role,
         currentPage,
-        today: new Date().toLocaleDateString('en-US'),
+        today: new Date().toLocaleDateString(lang === 'es' ? 'es-PR' : 'en-US'),
         appointmentCount,
         pendingNotes,
         activePatients,
         trainingMode: isTrainingPage,
+        lang,
       };
 
       const res = await fetch('/api/ai-chat', {
@@ -167,11 +188,13 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
 
       const reply = data.content as string;
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-      if (speakEnabled) speak(reply);
+      if (speakEnabled) speak(reply, lang);
     } catch {
-      const errMsg = 'Sorry, I had trouble connecting. Please try again in a moment.';
+      const errMsg = lang === 'es'
+        ? 'Lo siento, tuve un problema de conexión. Por favor intente de nuevo en un momento.'
+        : 'Sorry, I had trouble connecting. Please try again in a moment.';
       setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
-      if (speakEnabled) speak(errMsg);
+      if (speakEnabled) speak(errMsg, lang);
     } finally {
       setLoading(false);
     }
@@ -222,7 +245,9 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
             <div className="flex-1">
               <div className="text-white font-semibold text-sm">OptimumAI</div>
               <div className="text-teal-200 text-xs">
-                {isTrainingPage ? 'Training Mode Active' : 'Clinic Assistant'}
+                {isTrainingPage
+                  ? (lang === 'es' ? 'Modo de Capacitación Activo' : 'Training Mode Active')
+                  : (lang === 'es' ? 'Asistente de Clínica' : 'Clinic Assistant')}
               </div>
             </div>
 
@@ -271,11 +296,15 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
             <div className="bg-teal-50 border-b border-teal-100 px-4 py-2 flex items-center gap-2 flex-shrink-0">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse flex-shrink-0" />
               <span className="text-xs text-teal-700 font-medium">
-                Training Mode — Visual &amp; Oral step-by-step guidance active
+                {lang === 'es'
+                  ? 'Modo de Capacitación — Guía visual y oral paso a paso activa'
+                  : 'Training Mode — Visual & Oral step-by-step guidance active'}
               </span>
               {hasTTS && (
                 <span className="ml-auto text-xs text-teal-500">
-                  {speakEnabled ? '🔊 Voice ON' : '🔇 Voice OFF'}
+                  {speakEnabled
+                    ? (lang === 'es' ? '🔊 Voz ACTIVADA' : '🔊 Voice ON')
+                    : (lang === 'es' ? '🔇 Voz DESACTIVADA' : '🔇 Voice OFF')}
                 </span>
               )}
             </div>
@@ -284,9 +313,11 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
           {/* ── Quick Topics Panel ── */}
           {showTopics && (
             <div className="border-b border-gray-200 p-3 bg-gray-50 flex-shrink-0">
-              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Train me on…</p>
+              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                {lang === 'es' ? 'Capacítame sobre…' : 'Train me on…'}
+              </p>
               <div className="grid grid-cols-2 gap-1.5">
-                {TRAINING_TOPICS.map(t => (
+                {TRAINING_TOPICS[lang].map(t => (
                   <button
                     key={t.label}
                     onClick={() => send(t.prompt)}
@@ -317,11 +348,11 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
                   {/* Re-read button for AI messages */}
                   {msg.role === 'assistant' && hasTTS && (
                     <button
-                      onClick={() => speak(msg.content)}
+                      onClick={() => speak(msg.content, lang)}
                       className="mt-1 text-xs text-gray-400 hover:text-teal-500 block"
-                      title="Read aloud"
+                      title={lang === 'es' ? 'Leer en voz alta' : 'Read aloud'}
                     >
-                      🔊 Read aloud
+                      {lang === 'es' ? '🔊 Leer en voz alta' : '🔊 Read aloud'}
                     </button>
                   )}
                 </div>
@@ -369,7 +400,13 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder={listening ? 'Listening...' : isTrainingPage ? 'Ask to train you on anything…' : 'Ask anything or tap 🎤'}
+              placeholder={
+                listening
+                  ? (lang === 'es' ? 'Escuchando...' : 'Listening...')
+                  : isTrainingPage
+                    ? (lang === 'es' ? 'Pida que le capacite sobre cualquier tema…' : 'Ask to train you on anything…')
+                    : (lang === 'es' ? 'Pregunte lo que necesite o toque 🎤' : 'Ask anything or tap 🎤')
+              }
               rows={1}
               className="flex-1 resize-none border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               style={{ maxHeight: '100px' }}
