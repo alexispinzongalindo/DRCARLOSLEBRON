@@ -135,42 +135,6 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  // ── Keep sendRef in sync so timeouts always call the latest send ──────
-  useEffect(() => { sendRef.current = send; }, [send]);
-
-  // ── Listen for training banner "send to AI" events ─────────────────────
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { prompt } = (e as CustomEvent).detail;
-      pendingPrompt.current = prompt;
-      setOpen(true);
-    };
-    window.addEventListener('optimumai:send', handler);
-    return () => window.removeEventListener('optimumai:send', handler);
-  }, []);
-
-  // ── Auto-send pending prompt once greeting appears ──────────────────────
-  useEffect(() => {
-    if (open && messages.length === 1 && messages[0].role === 'assistant' && pendingPrompt.current) {
-      const prompt = pendingPrompt.current;
-      pendingPrompt.current = null;
-      sendRef.current(prompt);
-    }
-  }, [open, messages]);
-
-  // ── Cleanup TTS + recognition on unmount ──────────────────────────────
-  useEffect(() => {
-    return () => {
-      recognitionRef.current?.stop();
-      stopSpeaking();
-    };
-  }, []);
-
-  // ── Stop speaking when disabled ───────────────────────────────────────
-  useEffect(() => {
-    if (!speakEnabled) stopSpeaking();
-  }, [speakEnabled]);
-
   // ── Speech recognition ────────────────────────────────────────────────
   const startListening = () => {
     if (!hasSpeech) return;
@@ -259,6 +223,42 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
       setLoading(false);
     }
   }, [input, messages, loading, staff, currentPage, appointmentCount, pendingNotes, activePatients, speakEnabled, isTrainingPage, lang]);
+
+  // ── Keep sendRef in sync so timeouts always call the latest send ──────
+  useEffect(() => { sendRef.current = send; }, [send]);
+
+  // ── Listen for training banner "send to AI" events ─────────────────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { prompt } = (e as CustomEvent).detail;
+      pendingPrompt.current = prompt;
+      setOpen(true);
+    };
+    window.addEventListener('optimumai:send', handler);
+    return () => window.removeEventListener('optimumai:send', handler);
+  }, []);
+
+  // ── Auto-send pending prompt once greeting appears ──────────────────────
+  useEffect(() => {
+    if (open && messages.length === 1 && messages[0].role === 'assistant' && pendingPrompt.current) {
+      const prompt = pendingPrompt.current;
+      pendingPrompt.current = null;
+      sendRef.current(prompt);
+    }
+  }, [open, messages]);
+
+  // ── Cleanup TTS + recognition on unmount ──────────────────────────────
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      stopSpeaking();
+    };
+  }, []);
+
+  // ── Stop speaking when disabled ───────────────────────────────────────
+  useEffect(() => {
+    if (!speakEnabled) stopSpeaking();
+  }, [speakEnabled]);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
