@@ -160,5 +160,16 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'dexie-vendor': ['dexie'],
+          'zustand-vendor': ['zustand'],
+        }
+      }
+    }
   }
 })
