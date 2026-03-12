@@ -25,16 +25,32 @@ declare global {
 function speak(text: string, lang: 'en' | 'es' = 'en') {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.75;
-  utterance.pitch = 1;
-  utterance.volume = 1;
+
+  const doSpeak = () => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.75;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = lang === 'es'
+      ? voices.find(v => v.lang.startsWith('es') && v.localService)
+        ?? voices.find(v => v.lang.startsWith('es'))
+      : voices.find(v => v.lang.startsWith('en') && v.localService)
+        ?? voices.find(v => v.lang.startsWith('en'));
+    if (preferred) utterance.voice = preferred;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Voices may not be loaded yet — wait for them if needed
   const voices = window.speechSynthesis.getVoices();
-  const preferred = lang === 'es'
-    ? voices.find(v => v.lang.startsWith('es') && v.localService) ?? voices.find(v => v.lang.startsWith('es'))
-    : voices.find(v => v.lang.startsWith('en') && v.localService);
-  if (preferred) utterance.voice = preferred;
-  window.speechSynthesis.speak(utterance);
+  if (voices.length > 0) {
+    doSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.onvoiceschanged = null;
+      doSpeak();
+    };
+  }
 }
 
 function stopSpeaking() {
@@ -76,9 +92,11 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
   const [speakEnabled, setSpeakEnabled] = useState(false);
   const [showTopics, setShowTopics] = useState(false);
 
-  const bottomRef     = useRef<HTMLDivElement>(null);
-  const inputRef      = useRef<HTMLTextAreaElement>(null);
+  const bottomRef      = useRef<HTMLDivElement>(null);
+  const inputRef       = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const pendingPrompt  = useRef<string | null>(null);
+  const sendRef        = useRef<(text?: string) => void>(() => {});
 
   const hasSpeech = typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
@@ -117,6 +135,29 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  // ── Keep sendRef in sync so timeouts always call the latest send ──────
+  useEffect(() => { sendRef.current = send; }, [send]);
+
+  // ── Listen for training banner "send to AI" events ─────────────────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { prompt } = (e as CustomEvent).detail;
+      pendingPrompt.current = prompt;
+      setOpen(true);
+    };
+    window.addEventListener('optimumai:send', handler);
+    return () => window.removeEventListener('optimumai:send', handler);
+  }, []);
+
+  // ── Auto-send pending prompt once greeting appears ──────────────────────
+  useEffect(() => {
+    if (open && messages.length === 1 && messages[0].role === 'assistant' && pendingPrompt.current) {
+      const prompt = pendingPrompt.current;
+      pendingPrompt.current = null;
+      sendRef.current(prompt);
+    }
+  }, [open, messages]);
+
   // ── Cleanup TTS + recognition on unmount ──────────────────────────────
   useEffect(() => {
     return () => {
@@ -136,12 +177,26 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SR();
     recognitionRef.current = recognition;
-    recognition.lang = lang === 'es' ? 'es-PR' : 'en-US';
+    // es-US has broader browser support than es-PR
+    recognition.lang = lang === 'es' ? 'es-US' : 'en-US';
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.onstart  = () => setListening(true);
     recognition.onend    = () => setListening(false);
-    recognition.onerror  = () => setListening(false);
+    recognition.onerror  = (event: any) => {
+      setListening(false);
+      if (event.error === 'not-allowed') {
+        alert(lang === 'es'
+          ? 'Permiso de micrófono denegado. Permita el acceso al micrófono en la configuración del navegador.'
+          : 'Microphone permission denied. Please allow microphone access in your browser settings.');
+      } else if (event.error === 'no-speech') {
+        // silent — user just didn't speak
+      } else if (event.error === 'network') {
+        alert(lang === 'es'
+          ? 'Error de red en reconocimiento de voz. Verifique su conexión a internet.'
+          : 'Network error in voice recognition. Please check your internet connection.');
+      }
+    };
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setInput(prev => (prev ? prev + ' ' + transcript : transcript));

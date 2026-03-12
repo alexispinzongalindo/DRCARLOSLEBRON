@@ -7,6 +7,7 @@ export interface AIContext {
   pendingNotes?: number;
   activePatients?: number;
   trainingMode?: boolean;
+  lang?: 'en' | 'es';
 }
 
 export function buildSystemPrompt(context: AIContext = {}): string {
@@ -33,12 +34,14 @@ CURRENT SESSION CONTEXT
 - Pending clinical notes: ${context.pendingNotes ?? 0}
 - Active patients: ${context.activePatients ?? 0}
 - Training mode: ${context.trainingMode ? 'YES — provide detailed step-by-step visual training' : 'standard'}
+- App language: ${context.lang === 'es' ? 'SPANISH (ES) — respond entirely in Spanish' : 'ENGLISH (EN) — respond in English'}
 
 ═══════════════════════════════════════════
 APP NAVIGATION — 8 SECTIONS
 ═══════════════════════════════════════════
 Top nav: Dashboard | Patients | Appointments | Time Clock | Reminders | Staff | Payroll | Training
 Floating button bottom-right: OptimumAI lightbulb icon (open) / X (close)
+Header language toggle: EN/ES pill switch (top-right, next to sync dot) — switches entire app language including AI responses, voice recognition, and all UI text
 
 ═══════════════════════════════════════════
 USER ROLES & PERMISSIONS
@@ -75,8 +78,10 @@ Patient Detail tabs:
 Interactive calendar: Day / Week / Month views. Arrows navigate periods. "Today" returns to now.
 Status colors: Blue=Scheduled, Green=Confirmed, Yellow=Checked In, Gray=Completed, Red=Cancelled/No-Show.
 Appointment form: Patient (search), Date, Start Time, End Time, Type, Staff, Notes.
-Change status: click appointment → select status from dropdown.
+Click any appointment on the calendar → opens the full edit form PRE-FILLED with all existing appointment data (patient name, date, time, type, staff, notes) — user can update any field and save.
+Change status: click appointment → edit form opens → update status field from dropdown.
 Call patient: phone link on card opens device dialer.
+New Appointment button: available on Appointments page and Dashboard quick-actions.
 
 ── TIME CLOCK ──
 Clock In (optional shift note) → Start Break → End Break → Clock Out.
@@ -117,6 +122,7 @@ Speaker button (🔊) in header: enables text-to-speech — AI responses read al
 Training Mode: auto-activated on Training page — pulsing dot + "Training Mode Active" label.
 Quick Topics panel: 8 one-click training topic buttons.
 Context-aware: knows user name, role, page, date, appointment count, pending notes, active patients.
+BILINGUAL AI: responds in the app's active language (EN or ES). When user switches language toggle, AI greeting resets in the new language, conversation clears, and voice recognition switches (en-US ↔ es-PR). Text-to-speech uses the matching language voice automatically.
 
 ═══════════════════════════════════════════
 CLINICAL REFERENCE
@@ -166,9 +172,16 @@ For ORAL delivery (TTS enabled — speak naturally):
 - Keep steps short and natural for listening
 
 ═══════════════════════════════════════════
+LANGUAGE RULES
+═══════════════════════════════════════════
+${context.lang === 'es'
+  ? '- The app is set to SPANISH. You MUST respond entirely in Spanish regardless of what language the user types in.\n- Use Spanish PT/medical terminology appropriate for Puerto Rico.\n- Voice recognition is set to es-PR.'
+  : '- The app is set to ENGLISH. Respond in English unless the user explicitly writes in Spanish.\n- Voice recognition is set to en-US.'}
+
+═══════════════════════════════════════════
 BEHAVIOR RULES
 ═══════════════════════════════════════════
-- Respond in the same language the user writes in (English or Spanish)
+- Follow the language rules above — always match the active app language
 - Be concise but complete — never cut off mid-instruction
 - For training requests, be thorough with visual descriptions
 - For clinical questions, be accurate and reference standard PT practice

@@ -33,6 +33,7 @@ const CONTENT = {
         { icon: '🧑‍⚕️', title: 'Staff',    desc: 'Manage employees, roles, and licenses' },
         { icon: '💰', title: 'Payroll',     desc: 'Generate and approve payroll from time entries' },
         { icon: '🤖', title: 'OptimumAI',  desc: 'AI assistant — ask anything, anytime' },
+        { icon: '🌐', title: 'EN / ES',    desc: 'Language toggle — switch the entire app between English and Spanish instantly' },
       ],
       rolesTitle: 'User Roles & Permissions',
       roles: [
@@ -42,6 +43,7 @@ const CONTENT = {
         { role: 'Billing',    desc: 'Patient records, insurance data, payroll review' },
       ],
       aiTip: 'The OptimumAI assistant (lightbulb button, bottom-right) is available on every screen. You can type or speak your question at any time — no need to navigate to a specific page first.',
+      langTip: 'The EN/ES toggle in the header switches the entire app — all menus, labels, forms, and AI responses — between English and Spanish. Your language preference is saved automatically.',
     },
     dashboard: {
       subtitle: 'Your daily command center — everything at a glance',
@@ -138,8 +140,16 @@ const CONTENT = {
       sc4Text: 'Select the therapist or provider from the staff dropdown.',
       sc5Title: 'Add notes (optional) and save',
       sc5Text: 'Click Save Appointment. The appointment appears immediately on the calendar.',
+      editTitle: 'Editing an Existing Appointment',
+      ed1Title: 'Click the appointment on the calendar',
+      ed1Text: 'Clicking any appointment opens the full edit form pre-filled with all existing data — patient, date, time, type, staff, and notes.',
+      ed2Title: 'Update any field',
+      ed2Text: 'Change the date, time, type, staff, notes, or status as needed.',
+      ed3Title: 'Save your changes',
+      ed3Text: 'Click Save Appointment. The calendar updates immediately.',
       statusTitle: 'Changing Appointment Status',
-      st1Title: 'Click the appointment on the calendar',
+      st1Title: 'Open the appointment edit form',
+      st1Text: 'Click the appointment on the calendar to open the pre-filled edit form.',
       st2Title: 'Select the new status from the dropdown',
       st2Text: 'Options: Scheduled → Confirmed → Checked In → Completed. You can also mark as Cancelled or No-Show.',
       tip: 'You can call the patient directly from the appointment card — look for the phone link next to their number.',
@@ -269,6 +279,16 @@ const CONTENT = {
       o5Title: 'Close the assistant',
       o5Text: 'Click the X button to close the chat panel. Your history is saved for the current session.',
       voiceTip: 'You can use voice input in English or Spanish. Just click the mic and speak naturally.',
+      bilingualTitle: 'Bilingual AI — EN / ES Mode',
+      b1Title: 'Switch the language toggle in the header',
+      b1Text: 'Click the EN/ES pill switch in the top navigation bar. The entire app switches language immediately.',
+      b2Title: 'OptimumAI responds in the active language',
+      b2Text: 'When the app is set to Spanish (ES), OptimumAI automatically responds in Spanish — even if you type in English. When set to English (EN), it responds in English.',
+      b3Title: 'Voice recognition switches automatically',
+      b3Text: 'The microphone language switches to es-PR (Spanish Puerto Rico) in Spanish mode and en-US in English mode.',
+      b4Title: 'Greeting resets in the new language',
+      b4Text: 'When you toggle the language, the conversation resets and OptimumAI greets you again in the new language.',
+      bilingualTip: 'Your language preference is saved to the browser and remembered the next time you open the app.',
       ttsTitle: 'Text-to-Speech — Oral Training',
       t1Title: 'Find the speaker button in the AI header',
       t1Text: 'When the AI chat is open, look at the teal header bar. There is a speaker icon (🔊) on the right side of the header.',
@@ -402,7 +422,7 @@ const CONTENT = {
     banner: {
       title: 'OptimumAI Training Mode is Active on This Page',
       subtitle: 'The AI assistant (💡 bottom-right) is in Training Mode — it provides full visual & oral step-by-step walkthroughs. Enable the 🔊 speaker button to hear responses read aloud.',
-      quickStart: 'Quick Start — Click a topic, then open the AI assistant (💡) and paste or type it:',
+      quickStart: 'Click any topic below — it opens the AI assistant and sends the training request automatically:',
       topics: [
         { emoji: '🏠', label: 'Dashboard',    desc: 'Walk me through the dashboard' },
         { emoji: '👥', label: 'Patients',     desc: 'Train me on patient management' },
@@ -412,13 +432,13 @@ const CONTENT = {
         { emoji: '💰', label: 'Payroll',     desc: 'Walk me through generating payroll' },
         { emoji: '🤖', label: 'OptimumAI',  desc: 'Train me on all AI features' },
       ],
-      orType: 'Or just open the AI and type',
+      orType: 'Or open the AI (💡 bottom-right) and type',
       orTypeQuote: '"Train me on [any topic]"',
       orTypeRest: '— it knows this entire manual.',
       micNote: 'Use the 🎤 mic button to speak your question instead of typing.',
       copyPromptTemplate: 'Train me on {label} — give me a complete visual and oral step-by-step walkthrough.',
-      copied: '✓ Copied!',
-      clickToCopy: 'Click to copy prompt',
+      copied: '✓ Sent to AI!',
+      clickToCopy: 'Click to train with AI',
       step1: 'Open AI (💡 bottom-right)',
       step2: 'Enable 🔊 speaker for oral training',
       step3: 'Type or say "Train me on Patients"',
@@ -455,6 +475,7 @@ const CONTENT = {
         { icon: '🧑‍⚕️', title: 'Personal',    desc: 'Gestionar empleados, roles y licencias' },
         { icon: '💰', title: 'Nómina',         desc: 'Generar y aprobar nómina desde las entradas de tiempo' },
         { icon: '🤖', title: 'OptimumAI',      desc: 'Asistente de IA — pregunte cualquier cosa, en cualquier momento' },
+        { icon: '🌐', title: 'EN / ES',        desc: 'Cambio de idioma — cambia toda la aplicación entre inglés y español al instante' },
       ],
       rolesTitle: 'Roles y Permisos de Usuario',
       roles: [
@@ -464,6 +485,7 @@ const CONTENT = {
         { role: 'Facturación',desc: 'Expedientes de pacientes, datos de seguro, revisión de nómina' },
       ],
       aiTip: 'El asistente OptimumAI (botón de bombilla, parte inferior derecha) está disponible en cada pantalla. Puede escribir o hablar su pregunta en cualquier momento — no necesita navegar a una página específica primero.',
+      langTip: 'El botón EN/ES en el encabezado cambia toda la aplicación — menús, etiquetas, formularios y respuestas de IA — entre inglés y español. Su preferencia de idioma se guarda automáticamente.',
     },
     dashboard: {
       subtitle: 'Su centro de mando diario — todo de un vistazo',
@@ -560,8 +582,16 @@ const CONTENT = {
       sc4Text: 'Seleccione el terapeuta o proveedor del menú desplegable de personal.',
       sc5Title: 'Agregar notas (opcional) y guardar',
       sc5Text: 'Haga clic en Guardar Cita. La cita aparece inmediatamente en el calendario.',
+      editTitle: 'Editar una Cita Existente',
+      ed1Title: 'Haga clic en la cita en el calendario',
+      ed1Text: 'Al hacer clic en cualquier cita se abre el formulario de edición completo con todos los datos existentes — paciente, fecha, hora, tipo, personal y notas.',
+      ed2Title: 'Actualice cualquier campo',
+      ed2Text: 'Cambie la fecha, hora, tipo, personal, notas o estado según sea necesario.',
+      ed3Title: 'Guarde los cambios',
+      ed3Text: 'Haga clic en Guardar Cita. El calendario se actualiza inmediatamente.',
       statusTitle: 'Cambiar el Estado de la Cita',
-      st1Title: 'Haga clic en la cita en el calendario',
+      st1Title: 'Abrir el formulario de edición de la cita',
+      st1Text: 'Haga clic en la cita en el calendario para abrir el formulario pre-completado.',
       st2Title: 'Seleccione el nuevo estado del menú desplegable',
       st2Text: 'Opciones: Programada → Confirmada → Registrado → Completada. También puede marcar como Cancelada o No se Presentó.',
       tip: 'Puede llamar al paciente directamente desde la tarjeta de cita — busque el enlace de teléfono junto a su número.',
@@ -691,6 +721,16 @@ const CONTENT = {
       o5Title: 'Cerrar el asistente',
       o5Text: 'Haga clic en el botón X para cerrar el panel de chat. Su historial se guarda para la sesión actual.',
       voiceTip: 'Puede usar la entrada de voz en inglés o español. Solo haga clic en el micrófono y hable naturalmente.',
+      bilingualTitle: 'IA Bilingüe — Modo EN / ES',
+      b1Title: 'Cambie el botón de idioma en el encabezado',
+      b1Text: 'Haga clic en el botón EN/ES en la barra de navegación superior. Toda la aplicación cambia de idioma inmediatamente.',
+      b2Title: 'OptimumAI responde en el idioma activo',
+      b2Text: 'Cuando la aplicación está en español (ES), OptimumAI responde automáticamente en español — aunque escriba en inglés. En inglés (EN), responde en inglés.',
+      b3Title: 'El reconocimiento de voz cambia automáticamente',
+      b3Text: 'El idioma del micrófono cambia a es-PR (español de Puerto Rico) en modo español y en-US en modo inglés.',
+      b4Title: 'El saludo se reinicia en el nuevo idioma',
+      b4Text: 'Al cambiar el idioma, la conversación se reinicia y OptimumAI le saluda nuevamente en el nuevo idioma.',
+      bilingualTip: 'Su preferencia de idioma se guarda en el navegador y se recuerda la próxima vez que abra la aplicación.',
       ttsTitle: 'Texto a Voz — Capacitación Oral',
       t1Title: 'Encontrar el botón de altavoz en el encabezado de IA',
       t1Text: 'Cuando el chat de IA esté abierto, mire la barra de encabezado verde azulado. Hay un ícono de altavoz (🔊) en el lado derecho del encabezado.',
@@ -824,7 +864,7 @@ const CONTENT = {
     banner: {
       title: 'El Modo de Capacitación de OptimumAI Está Activo en Esta Página',
       subtitle: 'El asistente de IA (💡 parte inferior derecha) está en Modo de Capacitación — proporciona guías visuales y orales paso a paso completas. Active el botón 🔊 de altavoz para escuchar las respuestas en voz alta.',
-      quickStart: 'Inicio Rápido — Haga clic en un tema, luego abra el asistente de IA (💡) y péguelo o escríbalo:',
+      quickStart: 'Haga clic en cualquier tema — abre el asistente de IA y envía la capacitación automáticamente:',
       topics: [
         { emoji: '🏠', label: 'Panel',          desc: 'Guíame por el panel' },
         { emoji: '👥', label: 'Pacientes',      desc: 'Capacítame sobre gestión de pacientes' },
@@ -834,13 +874,13 @@ const CONTENT = {
         { emoji: '💰', label: 'Nómina',        desc: 'Guíame para generar la nómina' },
         { emoji: '🤖', label: 'OptimumAI',     desc: 'Capacítame sobre todas las funciones de IA' },
       ],
-      orType: 'O simplemente abra la IA y escriba',
+      orType: 'O abra la IA (💡 parte inferior derecha) y escriba',
       orTypeQuote: '"Capacítame sobre [cualquier tema]"',
       orTypeRest: '— conoce todo este manual.',
       micNote: 'Use el botón 🎤 de micrófono para hablar su pregunta en lugar de escribirla.',
       copyPromptTemplate: 'Capacítame sobre {label} — dame una guía visual y oral completa paso a paso.',
-      copied: '✓ ¡Copiado!',
-      clickToCopy: 'Clic para copiar',
+      copied: '✓ ¡Enviado a IA!',
+      clickToCopy: 'Clic para capacitar con IA',
       step1: 'Abrir IA (💡 parte inferior derecha)',
       step2: 'Activar 🔊 altavoz para capacitación oral',
       step3: 'Escriba o diga "Capacítame sobre Pacientes"',
@@ -955,6 +995,7 @@ function OverviewSection({ c }: { c: C }) {
           </div>
         </Card>
         <Tip>{ov.aiTip}</Tip>
+        <Tip>{ov.langTip}</Tip>
       </div>
     </div>
   );
@@ -1064,8 +1105,13 @@ function AppointmentsSection({ c }: { c: C }) {
       <Step number={4} title={a.sc4Title}><p>{a.sc4Text}</p></Step>
       <Step number={5} title={a.sc5Title}><p>{a.sc5Text}</p></Step>
 
+      <h3 className="font-semibold text-gray-800 text-lg mb-3 mt-6">{a.editTitle}</h3>
+      <Step number={1} title={a.ed1Title}><p>{a.ed1Text}</p></Step>
+      <Step number={2} title={a.ed2Title}><p>{a.ed2Text}</p></Step>
+      <Step number={3} title={a.ed3Title}><p>{a.ed3Text}</p></Step>
+
       <h3 className="font-semibold text-gray-800 text-lg mb-3 mt-6">{a.statusTitle}</h3>
-      <Step number={1} title={a.st1Title} />
+      <Step number={1} title={a.st1Title}><p>{a.st1Text}</p></Step>
       <Step number={2} title={a.st2Title}><p>{a.st2Text}</p></Step>
       <Tip>{a.tip}</Tip>
     </div>
@@ -1191,6 +1237,13 @@ function OptimumAISection({ c }: { c: C }) {
       <Step number={5} title={o.o5Title}><p>{o.o5Text}</p></Step>
       <Tip>{o.voiceTip}</Tip>
 
+      <h3 className="font-semibold text-gray-800 text-lg mb-3 mt-6">{o.bilingualTitle}</h3>
+      <Step number={1} title={o.b1Title}><p>{o.b1Text}</p></Step>
+      <Step number={2} title={o.b2Title}><p>{o.b2Text}</p></Step>
+      <Step number={3} title={o.b3Title}><p>{o.b3Text}</p></Step>
+      <Step number={4} title={o.b4Title}><p>{o.b4Text}</p></Step>
+      <Tip>{o.bilingualTip}</Tip>
+
       <h3 className="font-semibold text-gray-800 text-lg mb-3 mt-6">{o.ttsTitle}</h3>
       <Step number={1} title={o.t1Title}><p>{o.t1Text}</p></Step>
       <Step number={2} title={o.t2Title}><p>{o.t2Text}</p></Step>
@@ -1221,8 +1274,9 @@ function AITrainingBanner({ c }: { c: C }) {
   const [copied, setCopied] = useState<string | null>(null);
   const b = c.banner;
 
-  const copyPrompt = (desc: string, label: string) => {
-    navigator.clipboard.writeText(b.copyPromptTemplate.replace('{label}', label));
+  const sendToAI = (desc: string, label: string) => {
+    const prompt = b.copyPromptTemplate.replace('{label}', label);
+    window.dispatchEvent(new CustomEvent('optimumai:send', { detail: { prompt } }));
     setCopied(label);
     setTimeout(() => setCopied(null), 2000);
   };
@@ -1250,7 +1304,7 @@ function AITrainingBanner({ c }: { c: C }) {
           {b.topics.map(t => (
             <button
               key={t.label}
-              onClick={() => copyPrompt(t.desc, t.label)}
+              onClick={() => sendToAI(t.desc, t.label)}
               className="flex items-center gap-2 bg-white border border-teal-200 rounded-lg px-3 py-2 text-left hover:bg-teal-100 hover:border-teal-400 transition-colors group"
             >
               <span className="text-lg flex-shrink-0">{t.emoji}</span>
