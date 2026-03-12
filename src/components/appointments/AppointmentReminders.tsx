@@ -23,19 +23,24 @@ interface ReminderSettings {
 
 export function AppointmentReminders() {
   const { t } = useLanguage();
+  const rx = (t as any).reminderExtras;
   const [upcomingAppointments, setUpcomingAppointments] = useState<ReminderAppointment[]>([]);
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>({
     enabled: true,
     daysBefore: 1,
     hoursBefore: 2,
     methods: ['sms', 'call'],
-    message: 'Reminder: You have an appointment at Optimum Therapy tomorrow at {time}. Please call (787) 930-0174 if you need to reschedule.'
+    message: rx.defaultMessage,
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Reset default message when language changes
+  useEffect(() => {
+    setReminderSettings(prev => ({ ...prev, message: rx.defaultMessage }));
+  }, [rx.defaultMessage]);
+
   useEffect(() => {
     loadUpcomingAppointments();
-    // Set up interval to check for reminders every 30 minutes
     const interval = setInterval(loadUpcomingAppointments, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
@@ -104,14 +109,14 @@ export function AppointmentReminders() {
       }
 
       await db.appointments.update(appointment.id!, {
-        notes: (appointment.notes || '') + `\nReminder sent via ${method} on ${new Date().toLocaleString()}`
+        notes: (appointment.notes || '') + `\n${method.toUpperCase()} ${rx.sentVia} ${rx.on} ${new Date().toLocaleString()}`
       });
 
-      alert(`${method.toUpperCase()} reminder sent to ${appointment.patientName}`);
+      alert(`${method.toUpperCase()} ${rx.alertSent} ${appointment.patientName}`);
       loadUpcomingAppointments();
     } catch (error) {
       console.error('Error sending reminder:', error);
-      alert('Error sending reminder. Please try again.');
+      alert(rx.errorSending);
     }
   };
 
@@ -132,10 +137,10 @@ export function AppointmentReminders() {
           }
         }
       }
-      alert(`Bulk reminders sent for ${upcomingAppointments.length} appointments`);
+      alert(`${rx.bulkSent} ${upcomingAppointments.length} ${rx.appointments}`);
     } catch (error) {
       console.error('Error sending bulk reminders:', error);
-      alert('Error sending bulk reminders. Please try again.');
+      alert(rx.errorBulk);
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +155,7 @@ export function AppointmentReminders() {
       loadUpcomingAppointments();
     } catch (error) {
       console.error('Error confirming appointment:', error);
-      alert('Error confirming appointment. Please try again.');
+      alert(rx.errorConfirm);
     }
   };
 
@@ -213,9 +218,9 @@ export function AppointmentReminders() {
                   onChange={(e) => setReminderSettings(prev => ({ ...prev, daysBefore: parseInt(e.target.value) }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value={1}>1 day before</option>
-                  <option value={2}>2 days before</option>
-                  <option value={3}>3 days before</option>
+                  <option value={1}>{rx.day1}</option>
+                  <option value={2}>{rx.day2}</option>
+                  <option value={3}>{rx.day3}</option>
                 </select>
               </div>
 
@@ -260,10 +265,10 @@ export function AppointmentReminders() {
               value={reminderSettings.message}
               onChange={(e) => setReminderSettings(prev => ({ ...prev, message: e.target.value }))}
               className="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Use {time}, {date}, {patient} as placeholders"
+              placeholder={rx.placeholderInput}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Available placeholders: {'{time}'}, {'{date}'}, {'{patient}'}
+              {rx.placeholdersHint}
             </p>
           </div>
         </div>

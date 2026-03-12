@@ -416,6 +416,23 @@ const translations = {
       title: 'Training',
       userManual: 'User Manual',
     },
+    // Reminder extras
+    reminderExtras: {
+      defaultMessage: 'Reminder: You have an appointment at Optimum Therapy tomorrow at {time}. Please call (787) 930-0174 if you need to reschedule.',
+      day1: '1 day before',
+      day2: '2 days before',
+      day3: '3 days before',
+      placeholdersHint: 'Available placeholders: {time}, {date}, {patient}',
+      placeholderInput: 'Use {time}, {date}, {patient} as placeholders',
+      sentVia: 'reminder sent via',
+      on: 'on',
+      alertSent: 'reminder sent to',
+      errorSending: 'Error sending reminder. Please try again.',
+      errorBulk: 'Error sending bulk reminders. Please try again.',
+      errorConfirm: 'Error confirming appointment. Please try again.',
+      bulkSent: 'Bulk reminders sent for',
+      appointments: 'appointments',
+    },
     // Session
     session: {
       expired: 'Session Expired',
@@ -836,6 +853,23 @@ const translations = {
     training: {
       title: 'Capacitación',
       userManual: 'Manual de Usuario',
+    },
+    // Recordatorios extras
+    reminderExtras: {
+      defaultMessage: 'Recordatorio: Tiene una cita en Optimum Therapy mañana a las {time}. Llame al (787) 930-0174 si necesita reprogramar.',
+      day1: '1 día antes',
+      day2: '2 días antes',
+      day3: '3 días antes',
+      placeholdersHint: 'Marcadores disponibles: {time}, {date}, {patient}',
+      placeholderInput: 'Use {time}, {date}, {patient} como marcadores',
+      sentVia: 'recordatorio enviado por',
+      on: 'el',
+      alertSent: 'recordatorio enviado a',
+      errorSending: 'Error al enviar el recordatorio. Por favor intente de nuevo.',
+      errorBulk: 'Error al enviar los recordatorios masivos. Por favor intente de nuevo.',
+      errorConfirm: 'Error al confirmar la cita. Por favor intente de nuevo.',
+      bulkSent: 'Recordatorios masivos enviados para',
+      appointments: 'citas',
     },
     // Sesión
     session: {
