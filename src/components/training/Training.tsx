@@ -24,17 +24,6 @@ const CONTENT = {
       intro: 'Welcome to',
       introName: 'Optimum Therapy',
       introRest: '— the all-in-one clinic management platform for Dr. Carlos Lebron-Quiñones PT DPT. This manual walks you through every section of the system. Use the left menu to jump to any topic.',
-      features: [
-        { icon: '🏠', title: 'Dashboard',    desc: 'Daily overview, stats, and quick actions' },
-        { icon: '👥', title: 'Patients',     desc: 'Register, search, and manage patient records' },
-        { icon: '📅', title: 'Appointments', desc: 'Schedule and track appointments on a calendar' },
-        { icon: '⏱',  title: 'Time Clock',  desc: 'Staff clock in/out and break tracking' },
-        { icon: '🔔', title: 'Reminders',   desc: 'Send SMS, email, or call reminders to patients' },
-        { icon: '🧑‍⚕️', title: 'Staff',    desc: 'Manage employees, roles, and licenses' },
-        { icon: '💰', title: 'Payroll',     desc: 'Generate and approve payroll from time entries' },
-        { icon: '🤖', title: 'OptimumAI',  desc: 'AI assistant — ask anything, anytime' },
-        { icon: '🌐', title: 'EN / ES',    desc: 'Language toggle — switch the entire app between English and Spanish instantly' },
-      ],
       rolesTitle: 'User Roles & Permissions',
       roles: [
         { role: 'Admin',      desc: 'Full access to all sections including staff and payroll' },
@@ -466,17 +455,6 @@ const CONTENT = {
       intro: 'Bienvenido a',
       introName: 'Optimum Therapy',
       introRest: '— la plataforma integral de gestión clínica para el Dr. Carlos Lebrón-Quiñones PT DPT. Este manual le guía por cada sección del sistema. Use el menú de la izquierda para ir a cualquier tema.',
-      features: [
-        { icon: '🏠', title: 'Panel',           desc: 'Resumen diario, estadísticas y acciones rápidas' },
-        { icon: '👥', title: 'Pacientes',       desc: 'Registrar, buscar y gestionar expedientes de pacientes' },
-        { icon: '📅', title: 'Citas',           desc: 'Programar y dar seguimiento a citas en un calendario' },
-        { icon: '⏱',  title: 'Reloj',          desc: 'Registro de entrada/salida y descansos del personal' },
-        { icon: '🔔', title: 'Recordatorios',  desc: 'Enviar recordatorios por SMS, correo o llamada a pacientes' },
-        { icon: '🧑‍⚕️', title: 'Personal',    desc: 'Gestionar empleados, roles y licencias' },
-        { icon: '💰', title: 'Nómina',         desc: 'Generar y aprobar nómina desde las entradas de tiempo' },
-        { icon: '🤖', title: 'OptimumAI',      desc: 'Asistente de IA — pregunte cualquier cosa, en cualquier momento' },
-        { icon: '🌐', title: 'EN / ES',        desc: 'Cambio de idioma — cambia toda la aplicación entre inglés y español al instante' },
-      ],
       rolesTitle: 'Roles y Permisos de Usuario',
       roles: [
         { role: 'Admin',      desc: 'Acceso completo a todas las secciones incluyendo personal y nómina' },
@@ -973,17 +951,6 @@ function OverviewSection({ c }: { c: C }) {
         <p className="text-gray-600 mb-6">
           {ov.intro} <strong>{ov.introName}</strong> {ov.introRest}
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {ov.features.map(item => (
-            <div key={item.title} className="flex gap-3 border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow">
-              <span className="text-2xl flex-shrink-0">{item.icon}</span>
-              <div>
-                <div className="font-semibold text-gray-900">{item.title}</div>
-                <div className="text-xs text-gray-500">{item.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
         <Card title={ov.rolesTitle} color="purple">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ov.roles.map(r => (
