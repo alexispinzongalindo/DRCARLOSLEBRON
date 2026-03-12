@@ -28,7 +28,7 @@ function speak(text: string, lang: 'en' | 'es' = 'en') {
 
   const doSpeak = () => {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.75;
+    utterance.rate = 0.6;
     utterance.pitch = 1;
     utterance.volume = 1;
     const voices = window.speechSynthesis.getVoices();
