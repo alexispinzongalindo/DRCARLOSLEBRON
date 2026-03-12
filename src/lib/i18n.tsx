@@ -857,13 +857,17 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const stored = localStorage.getItem('app_lang') as Lang | null;
-  const [lang, setLang] = useState<Lang>(stored ?? 'en');
+  const [lang, setLang] = useState<Lang>(() => {
+    const stored = localStorage.getItem('app_lang') as Lang | null;
+    return stored ?? 'en';
+  });
 
   const toggleLang = () => {
-    const next: Lang = lang === 'en' ? 'es' : 'en';
-    setLang(next);
-    localStorage.setItem('app_lang', next);
+    setLang(prev => {
+      const next: Lang = prev === 'en' ? 'es' : 'en';
+      localStorage.setItem('app_lang', next);
+      return next;
+    });
   };
 
   return (

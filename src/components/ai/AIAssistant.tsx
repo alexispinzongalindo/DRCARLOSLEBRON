@@ -86,9 +86,14 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
 
   const isTrainingPage = currentPage === 'training';
 
+  // ── Reset conversation when language changes ──────────────────────────
+  useEffect(() => {
+    setMessages([]);
+  }, [lang]);
+
   // ── Greeting on open ───────────────────────────────────────────────────
   useEffect(() => {
-    if (open && messages.length === 0) {
+    if (open) {
       const name = staff?.first_name ?? (lang === 'es' ? 'aquí' : 'there');
       const greeting = lang === 'es'
         ? isTrainingPage
@@ -100,7 +105,7 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
       setMessages([{ role: 'assistant', content: greeting }]);
       if (speakEnabled) speak(greeting, lang);
     }
-  }, [open]);
+  }, [open, lang]);
 
   // ── Auto-scroll ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -198,7 +203,7 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     } finally {
       setLoading(false);
     }
-  }, [input, messages, loading, staff, currentPage, appointmentCount, pendingNotes, activePatients, speakEnabled, isTrainingPage]);
+  }, [input, messages, loading, staff, currentPage, appointmentCount, pendingNotes, activePatients, speakEnabled, isTrainingPage, lang]);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
