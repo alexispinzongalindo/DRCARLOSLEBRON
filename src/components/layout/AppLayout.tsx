@@ -59,11 +59,11 @@ export function AppLayout({ children, currentPage = 'dashboard', onNavigate }: A
                 className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 rounded-full px-2 py-1 transition-colors flex-shrink-0"
                 title={lang === 'en' ? 'Cambiar a Español' : 'Switch to English'}
               >
-                <span className="text-xs font-bold text-gray-600 w-5 text-center">{lang === 'en' ? 'EN' : 'ES'}</span>
+                <span className={`text-xs font-bold w-5 text-center ${lang === 'en' ? 'text-teal-700' : 'text-gray-400'}`}>EN</span>
                 <div className="relative w-8 h-4 bg-teal-200 rounded-full mx-0.5">
                   <div className={`absolute top-0.5 w-3 h-3 bg-teal-600 rounded-full transition-all duration-200 ${lang === 'es' ? 'left-4' : 'left-0.5'}`} />
                 </div>
-                <span className="text-xs font-bold text-gray-600 w-5 text-center">{lang === 'en' ? 'ES' : 'EN'}</span>
+                <span className={`text-xs font-bold w-5 text-center ${lang === 'es' ? 'text-teal-700' : 'text-gray-400'}`}>ES</span>
               </button>
 
               {/* Full name on desktop only */}
