@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { db, Staff, TimeEntry, PayrollRecord } from '../../db/dexie';
 import { formatDate, formatPhoneNumber } from '../../lib/utils';
 import { StaffForm } from './StaffForm';
+import { useLanguage } from '../../lib/i18n';
 
 interface StaffDetailProps {
   staffId: string;
@@ -111,6 +112,7 @@ function printStaffDetail(member: Staff, entries: TimeEntry[], range: { start: s
 }
 
 export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
+  const { t } = useLanguage();
   const [member, setMember] = useState<Staff | null>(null);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
@@ -171,13 +173,13 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
   }, [dateRange, customStart, customEnd]);
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading...</div>;
+    return <div className="p-8 text-center text-gray-500">{t.common.loading}</div>;
   }
   if (!member) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Staff member not found.</p>
-        <button onClick={onBack} className="mt-4 text-teal-600 hover:underline text-sm">Go Back</button>
+        <p className="text-gray-500">{t.staff.noStaff}</p>
+        <button onClick={onBack} className="mt-4 text-teal-600 hover:underline text-sm">{t.payroll.goBack}</button>
       </div>
     );
   }
@@ -186,9 +188,9 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
   const totalHours = timeEntries.reduce((sum, e) => sum + (e.total_hours ?? 0), 0);
 
   const payrollStatusBadge = (status: PayrollRecord['status']) => {
-    if (status === 'draft') return <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">Draft</span>;
-    if (status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">Approved</span>;
-    return <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Paid</span>;
+    if (status === 'draft') return <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.draft}</span>;
+    if (status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.approved}</span>;
+    return <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.paid}</span>;
   };
 
   return (
@@ -199,7 +201,7 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Back to Staff
+          {t.staff.backToStaff}
         </button>
         <div className="flex-1 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-3">
@@ -214,9 +216,9 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
                 <span className="text-sm text-gray-500">{ROLE_LABELS[member.role]}</span>
                 {member.position && <span className="text-sm text-gray-400">· {member.position}</span>}
                 {member.is_active !== false ? (
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Active</span>
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">{t.staff.active}</span>
                 ) : (
-                  <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">Inactive</span>
+                  <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">{t.staff.inactive}</span>
                 )}
               </div>
             </div>
@@ -226,7 +228,7 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
           onClick={() => setShowEdit(true)}
           className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium"
         >
-          Edit
+          {t.common.edit}
         </button>
       </div>
 
@@ -234,9 +236,9 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
       <div className="border-b border-gray-200">
         <nav className="flex gap-0">
           {([
-            { id: 'info', label: 'Profile' },
-            { id: 'time', label: 'Time Entries' },
-            { id: 'payroll', label: 'Payroll History' },
+            { id: 'info', label: t.staff.profileTab },
+            { id: 'time', label: t.staff.timeEntriesTab },
+            { id: 'payroll', label: t.staff.payrollHistoryTab },
           ] as { id: ActiveTab; label: string }[]).map(t => (
             <button
               key={t.id}
@@ -258,33 +260,33 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Contact */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Contact Information</h2>
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">{t.staff.contactInfoSection}</h2>
             <dl className="space-y-3">
-              <InfoRow label="Email" value={member.email} />
-              <InfoRow label="Phone" value={member.phone ? formatPhoneNumber(member.phone) : undefined} />
-              <InfoRow label="Address" value={member.address} />
+              <InfoRow label={t.staff.emailLabel} value={member.email} />
+              <InfoRow label={t.staff.phoneLabel} value={member.phone ? formatPhoneNumber(member.phone) : undefined} />
+              <InfoRow label={t.staff.addressSection} value={member.address} />
             </dl>
           </div>
 
           {/* Professional */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Professional Information</h2>
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">{t.staff.professionalInfoSection}</h2>
             <dl className="space-y-3">
-              <InfoRow label="License #" value={member.license_number} />
-              <InfoRow label="NPI" value={member.npi} />
-              <InfoRow label="PTAN" value={member.ptan} />
-              <InfoRow label="Position" value={member.position} />
-              <InfoRow label="Hire Date" value={member.hire_date ? formatDate(member.hire_date) : undefined} />
+              <InfoRow label={t.staff.licenseNumber} value={member.license_number} />
+              <InfoRow label={t.staff.npi} value={member.npi} />
+              <InfoRow label={t.staff.ptan} value={member.ptan} />
+              <InfoRow label={t.staff.position} value={member.position} />
+              <InfoRow label={t.staff.hireDateLabel} value={member.hire_date ? formatDate(member.hire_date) : undefined} />
             </dl>
           </div>
 
           {/* Payroll */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Payroll Information</h2>
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">{t.staff.payrollInfoSection}</h2>
             <dl className="space-y-3">
-              <InfoRow label="Pay Type" value={member.pay_type === 'salary' ? 'Salary' : 'Hourly'} />
+              <InfoRow label={t.staff.payType} value={member.pay_type === 'salary' ? t.staff.salary : t.staff.hourly} />
               <InfoRow
-                label={member.pay_type === 'salary' ? 'Annual Salary' : 'Hourly Rate'}
+                label={member.pay_type === 'salary' ? t.staff.annualSalary : t.staff.hourlyRateLabel}
                 value={member.hourly_rate !== undefined ? formatCurrency(member.hourly_rate) : undefined}
               />
             </dl>
@@ -292,17 +294,17 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
 
           {/* Emergency Contact */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Emergency Contact</h2>
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">{t.staff.emergencyContactSection}</h2>
             <dl className="space-y-3">
-              <InfoRow label="Name" value={member.emergency_contact_name} />
-              <InfoRow label="Phone" value={member.emergency_contact_phone ? formatPhoneNumber(member.emergency_contact_phone) : undefined} />
+              <InfoRow label={t.staff.emergencyContactName} value={member.emergency_contact_name} />
+              <InfoRow label={t.staff.emergencyContactPhone} value={member.emergency_contact_phone ? formatPhoneNumber(member.emergency_contact_phone) : undefined} />
             </dl>
           </div>
 
           {/* Notes */}
           {member.notes && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:col-span-2">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Notes</h2>
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">{t.staff.notesSection}</h2>
               <p className="text-sm text-gray-600 whitespace-pre-wrap">{member.notes}</p>
             </div>
           )}
@@ -316,9 +318,9 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex gap-2">
               {([
-                { id: 'this-week', label: 'This Week' },
-                { id: 'this-month', label: 'This Month' },
-                { id: 'custom', label: 'Custom' },
+                { id: 'this-week', label: t.staff.thisWeek },
+                { id: 'this-month', label: t.staff.thisMonth },
+                { id: 'custom', label: t.staff.custom },
               ] as { id: DateRange; label: string }[]).map(r => (
                 <button
                   key={r.id}
@@ -334,7 +336,7 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
             {dateRange === 'custom' && (
               <div className="flex items-center gap-2">
                 <input type="date" className="p-2 border border-gray-300 rounded-md text-sm" value={customStart} onChange={e => setCustomStart(e.target.value)} />
-                <span className="text-gray-400">to</span>
+                <span className="text-gray-400">{t.staff.to}</span>
                 <input type="date" className="p-2 border border-gray-300 rounded-md text-sm" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
               </div>
             )}
@@ -345,20 +347,20 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
               </svg>
-              Print
+              {t.staff.print}
             </button>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {timeEntries.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No time entries for this period.</div>
+              <div className="p-8 text-center text-gray-500">{t.staff.noTimeEntries}</div>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        {['Date', 'Clock In', 'Clock Out', 'Break', 'Total Hours', 'Notes'].map(h => (
+                        {[t.staff.date, t.staff.clockIn, t.staff.clockOut, t.staff.breakCol, t.staff.totalHours, t.staff.notesCol].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
                         ))}
                       </tr>
@@ -369,7 +371,7 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
                           <td className="px-4 py-3 text-sm text-gray-900">{formatDate(entry.date)}</td>
                           <td className="px-4 py-3 text-sm text-gray-600">{entry.clock_in ? new Date(entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                           <td className="px-4 py-3 text-sm text-gray-600">{entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{entry.break_start ? 'Yes' : '—'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{entry.break_start ? t.staff.yes : '—'}</td>
                           <td className="px-4 py-3 text-sm font-medium text-gray-900">{formatHours(entry.total_hours)}</td>
                           <td className="px-4 py-3 text-sm text-gray-500">{entry.notes || '—'}</td>
                         </tr>
@@ -377,7 +379,7 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
                     </tbody>
                     <tfoot className="bg-gray-50">
                       <tr>
-                        <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-700">Total</td>
+                        <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-700">{t.staff.total}</td>
                         <td className="px-4 py-3 text-sm font-bold text-gray-900">{totalHours.toFixed(2)} hrs</td>
                         <td />
                       </tr>
@@ -394,13 +396,13 @@ export function StaffDetail({ staffId, onBack }: StaffDetailProps) {
       {tab === 'payroll' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {payrollRecords.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No payroll records found for this staff member.</div>
+            <div className="p-8 text-center text-gray-500">{t.staff.noPayrollForStaff}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {['Pay Period', 'Regular Hrs', 'OT Hrs', 'Gross Pay', 'Deductions', 'Net Pay', 'Status'].map(h => (
+                    {[t.staff.payPeriod, t.staff.regHrs, t.staff.otHrs, t.staff.grossPay, t.staff.deductions, t.staff.netPay, t.staff.statusCol].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>

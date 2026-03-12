@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db, Staff } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface StaffFormProps {
   staffId?: string;
@@ -36,6 +37,7 @@ const emptyForm = (): Omit<Staff, 'id'> => ({
 });
 
 export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
+  const { t } = useLanguage();
   const [form, setForm] = useState<Omit<Staff, 'id'>>(emptyForm());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -102,7 +104,7 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-8">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t.common.loading}</p>
         </div>
       </div>
     );
@@ -119,7 +121,7 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-gray-900">
-            {staffId ? 'Edit Staff Member' : 'Add Staff Member'}
+            {staffId ? t.staff.editStaffMember : t.staff.addStaff}
           </h2>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -131,43 +133,43 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Info */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Basic Information</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.basicInfo}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.firstName} <span className="text-red-500">*</span></label>
                 <input className={inputCls('first_name')} value={form.first_name} onChange={e => set('first_name', e.target.value)} />
                 {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.lastName} <span className="text-red-500">*</span></label>
                 <input className={inputCls('last_name')} value={form.last_name} onChange={e => set('last_name', e.target.value)} />
                 {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.role} <span className="text-red-500">*</span></label>
                 <select className={inputCls('role')} value={form.role} onChange={e => set('role', e.target.value as Staff['role'])}>
                   {ROLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.position}</label>
                 <input className={inputCls()} placeholder="e.g. Physical Therapist, PTA, Receptionist" value={form.position ?? ''} onChange={e => set('position', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.emailLabel}</label>
                 <input type="email" className={inputCls()} value={form.email ?? ''} onChange={e => set('email', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.phoneLabel}</label>
                 <input type="tel" className={inputCls()} value={form.phone ?? ''} onChange={e => set('phone', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Hire Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.hireDateInputLabel}</label>
                 <input type="date" className={inputCls()} value={form.hire_date ?? ''} onChange={e => set('hire_date', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Calendar Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.calendarColor}</label>
                 <div className="flex items-center gap-2">
                   <input type="color" className="h-9 w-16 p-1 border border-gray-300 rounded-md cursor-pointer" value={form.color_code ?? '#0d9488'} onChange={e => set('color_code', e.target.value)} />
                   <span className="text-sm text-gray-500">{form.color_code}</span>
@@ -178,18 +180,18 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
 
           {/* Professional */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Professional Credentials</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.professionalCredentials}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.licenseNumber}</label>
                 <input className={inputCls()} value={form.license_number ?? ''} onChange={e => set('license_number', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">NPI</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.npi}</label>
                 <input className={inputCls()} value={form.npi ?? ''} onChange={e => set('npi', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">PTAN</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.ptan}</label>
                 <input className={inputCls()} value={form.ptan ?? ''} onChange={e => set('ptan', e.target.value)} />
               </div>
             </div>
@@ -197,18 +199,18 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
 
           {/* Payroll */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Payroll Information</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.payrollInfoSection}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pay Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.payType}</label>
                 <select className={inputCls()} value={form.pay_type ?? 'hourly'} onChange={e => set('pay_type', e.target.value as 'hourly' | 'salary')}>
-                  <option value="hourly">Hourly</option>
-                  <option value="salary">Salary</option>
+                  <option value="hourly">{t.staff.hourly}</option>
+                  <option value="salary">{t.staff.salary}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {form.pay_type === 'salary' ? 'Annual Salary ($)' : 'Hourly Rate ($)'}
+                  {form.pay_type === 'salary' ? t.staff.annualSalaryDollar : t.staff.hourlyRateDollar}
                 </label>
                 <input
                   type="number"
@@ -224,7 +226,7 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
 
           {/* Address */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Address</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.addressSection}</h3>
             <textarea
               className={inputCls()}
               rows={2}
@@ -236,14 +238,14 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Emergency Contact</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.emergencyContactSection}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.emergencyContactName}</label>
                 <input className={inputCls()} value={form.emergency_contact_name ?? ''} onChange={e => set('emergency_contact_name', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.staff.emergencyContactPhone}</label>
                 <input type="tel" className={inputCls()} value={form.emergency_contact_phone ?? ''} onChange={e => set('emergency_contact_phone', e.target.value)} />
               </div>
             </div>
@@ -251,7 +253,7 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
 
           {/* Notes */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Notes</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.staff.notesSection}</h3>
             <textarea
               className={inputCls()}
               rows={3}
@@ -264,10 +266,10 @@ export function StaffForm({ staffId, onSave, onCancel }: StaffFormProps) {
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
             <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-              Cancel
+              {t.common.cancel}
             </button>
             <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 disabled:opacity-50">
-              {saving ? 'Saving...' : staffId ? 'Save Changes' : 'Add Staff Member'}
+              {saving ? t.staff.saving : staffId ? t.staff.saveChanges : t.staff.addStaff}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import { Button } from '../shared/Button';
 import { db } from '../../db/dexie';
 import { formatDate, formatTime } from '../../lib/utils';
 import type { Appointment, Patient } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface ReminderAppointment extends Appointment {
   patientName: string;
@@ -21,6 +22,7 @@ interface ReminderSettings {
 }
 
 export function AppointmentReminders() {
+  const { t } = useLanguage();
   const [upcomingAppointments, setUpcomingAppointments] = useState<ReminderAppointment[]>([]);
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>({
     enabled: true,
@@ -168,18 +170,18 @@ export function AppointmentReminders() {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Appointment Reminders</h1>
-            <p className="text-gray-600">Manage patient appointment notifications and confirmations</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t.reminders.title}</h1>
+            <p className="text-gray-600">{t.reminders.subtitle}</p>
           </div>
           <div className="flex space-x-3">
             <Button 
               onClick={sendBulkReminders}
               disabled={isLoading || upcomingAppointments.length === 0}
             >
-              Send All Reminders
+              {t.reminders.sendAll}
             </Button>
             <Button variant="outline" onClick={loadUpcomingAppointments}>
-              Refresh
+              {t.reminders.refresh}
             </Button>
           </div>
         </div>
@@ -187,7 +189,7 @@ export function AppointmentReminders() {
 
       {/* Reminder Settings */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Reminder Settings</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.reminders.settings}</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -198,13 +200,13 @@ export function AppointmentReminders() {
                 onChange={(e) => setReminderSettings(prev => ({ ...prev, enabled: e.target.checked }))}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700">Enable automatic reminders</span>
+              <span className="text-sm font-medium text-gray-700">{t.reminders.enableAuto}</span>
             </label>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Send reminders (days before)
+                  {t.reminders.daysBefore}
                 </label>
                 <select
                   value={reminderSettings.daysBefore}
@@ -219,7 +221,7 @@ export function AppointmentReminders() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reminder methods
+                  {t.reminders.methods}
                 </label>
                 <div className="space-y-2">
                   {(['sms', 'email', 'call'] as const).map(method => (
@@ -252,7 +254,7 @@ export function AppointmentReminders() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reminder message template
+              {t.reminders.messageTemplate}
             </label>
             <textarea
               value={reminderSettings.message}
@@ -270,7 +272,7 @@ export function AppointmentReminders() {
       {/* Upcoming Appointments */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Upcoming Appointments ({upcomingAppointments.length})
+          {t.reminders.upcoming} ({upcomingAppointments.length})
         </h2>
         
         {isLoading ? (
@@ -279,7 +281,7 @@ export function AppointmentReminders() {
           </div>
         ) : upcomingAppointments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No appointments need reminders at this time
+            {t.reminders.noRemindersNeeded}
           </div>
         ) : (
           <div className="space-y-3">
@@ -302,7 +304,7 @@ export function AppointmentReminders() {
                           {formatDate(appointment.appointment_date)} • {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {appointment.type} • {hoursDiff > 0 ? `In ${hoursDiff} hours` : 'Overdue'}
+                          {appointment.type} • {hoursDiff > 0 ? `${t.reminders.inHours} ${hoursDiff} ${t.reminders.hours}` : t.reminders.overdue}
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
                           {appointment.patientPhone && `📞 ${appointment.patientPhone}`}
@@ -325,7 +327,7 @@ export function AppointmentReminders() {
                             variant="outline"
                             onClick={() => markAsConfirmed(appointment.id!)}
                           >
-                            Confirm
+                            {t.common.confirm}
                           </Button>
                         )}
                         
@@ -337,14 +339,14 @@ export function AppointmentReminders() {
                                 onClick={() => sendReminder(appointment, 'sms')}
                                 className="bg-blue-600 hover:bg-blue-700"
                               >
-                                SMS
+                                {t.reminders.sms}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => window.open(`tel:${appointment.patientPhone}`)}
                               >
-                                Call
+                                {t.reminders.call}
                               </Button>
                             </>
                           )}
@@ -354,7 +356,7 @@ export function AppointmentReminders() {
                               onClick={() => sendReminder(appointment, 'email')}
                               className="bg-green-600 hover:bg-green-700"
                             >
-                              Email
+                              {t.reminders.emailBtn}
                             </Button>
                           )}
                         </div>
@@ -371,13 +373,13 @@ export function AppointmentReminders() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-2xl font-bold text-blue-600">{upcomingAppointments.length}</div>
-          <div className="text-sm text-gray-600">Need Reminders</div>
+          <div className="text-sm text-gray-600">{t.reminders.needReminders}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-2xl font-bold text-green-600">
             {upcomingAppointments.filter(a => a.status === 'confirmed').length}
           </div>
-          <div className="text-sm text-gray-600">Confirmed</div>
+          <div className="text-sm text-gray-600">{t.reminders.confirmed}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-2xl font-bold text-yellow-600">
@@ -386,7 +388,7 @@ export function AppointmentReminders() {
               return hoursDiff <= 24;
             }).length}
           </div>
-          <div className="text-sm text-gray-600">Within 24h</div>
+          <div className="text-sm text-gray-600">{t.reminders.within24h}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-2xl font-bold text-red-600">
@@ -395,7 +397,7 @@ export function AppointmentReminders() {
               return hoursDiff <= 2;
             }).length}
           </div>
-          <div className="text-sm text-gray-600">Urgent (2h)</div>
+          <div className="text-sm text-gray-600">{t.reminders.urgent}</div>
         </div>
       </div>
     </div>

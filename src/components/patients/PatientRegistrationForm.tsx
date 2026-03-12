@@ -4,6 +4,7 @@ import { Input } from '../shared/Input';
 import { db } from '../../db/dexie';
 import { generateMRN } from '../../lib/utils';
 import type { Patient } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface PatientRegistrationFormProps {
   onSave: (patient: Patient) => void;
@@ -12,6 +13,7 @@ interface PatientRegistrationFormProps {
 }
 
 export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: PatientRegistrationFormProps) {
+  const { t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
   
   // Form state
@@ -79,21 +81,21 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
       {/* Header */}
       <div className="bg-blue-50 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          {existingPatient ? 'Edit Patient' : 'New Patient Registration'}
+          {existingPatient ? t.patients.editTitle : t.patients.newRegistration}
         </h2>
         <p className="text-gray-600 mt-2">
-          {existingPatient ? 'Update patient information' : 'Enter patient demographic and insurance information'}
+          {existingPatient ? t.patients.updateInfo : t.patients.enterDemographic}
         </p>
       </div>
 
       {/* Personal Information */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.patients.personalInfo}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              First Name <span className="text-red-500">*</span>
+              {t.patients.firstName} <span className="text-red-500">*</span>
             </label>
             <Input
               value={firstName}
@@ -104,7 +106,7 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Last Name <span className="text-red-500">*</span>
+              {t.patients.lastName} <span className="text-red-500">*</span>
             </label>
             <Input
               value={lastName}
@@ -118,7 +120,7 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date of Birth <span className="text-red-500">*</span>
+              {t.patients.dateOfBirth} <span className="text-red-500">*</span>
             </label>
             <Input
               type="date"
@@ -128,19 +130,19 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sex</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.patients.sex}</label>
             <select
               value={sex}
               onChange={(e) => setSex(e.target.value as 'M' | 'F' | 'Other')}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-              <option value="Other">Other</option>
+              <option value="M">{t.patients.male}</option>
+              <option value="F">{t.patients.female}</option>
+              <option value="Other">{t.patients.other}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.common.phone}</label>
             <Input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -150,7 +152,7 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t.common.email}</label>
           <Input
             type="email"
             value={email}
@@ -162,10 +164,10 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
 
       {/* Address Information */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.patients.addressInfo}</h3>
+
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t.common.address}</label>
           <Input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -176,10 +178,10 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
 
       {/* Emergency Contact */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contact</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.patients.emergencyContact}</h3>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t.patients.emergencyContact}</label>
           <Input
             value={emergencyContact}
             onChange={(e) => setEmergencyContact(e.target.value)}
@@ -190,10 +192,10 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
 
       {/* Insurance Information */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Insurance Information</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.patients.insuranceInfo}</h3>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Insurance ID</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t.patients.insuranceId}</label>
           <Input
             value={insuranceId}
             onChange={(e) => setInsuranceId(e.target.value)}
@@ -206,10 +208,10 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
       {/* Action Buttons */}
       <div className="flex justify-end space-x-4">
         <Button variant="outline" onClick={onCancel}>
-          Cancel
+          {t.common.cancel}
         </Button>
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? 'Saving...' : existingPatient ? 'Update Patient' : 'Save Patient'}
+          {isSaving ? t.common.loading : existingPatient ? t.patients.updatePatient : t.patients.savePatient}
         </Button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, Staff } from '../../db/dexie';
 import { StaffForm } from './StaffForm';
+import { useLanguage } from '../../lib/i18n';
 
 interface StaffListProps {
   onNavigate?: (page: string, params?: Record<string, string>) => void;
@@ -26,6 +27,7 @@ const FILTER_TABS: { id: FilterTab; label: string }[] = [
 ];
 
 export function StaffList({ onNavigate }: StaffListProps) {
+  const { t } = useLanguage();
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [filter, setFilter] = useState<FilterTab>('all');
   const [showForm, setShowForm] = useState(false);
@@ -82,8 +84,8 @@ export function StaffList({ onNavigate }: StaffListProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Staff Management</h1>
-          <p className="text-sm text-gray-500 mt-1">{staffList.length} total members</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.staff.staffManagement}</h1>
+          <p className="text-sm text-gray-500 mt-1">{staffList.length} {t.staff.totalMembers}</p>
         </div>
         <button
           onClick={() => { setEditingStaffId(undefined); setShowForm(true); }}
@@ -92,7 +94,7 @@ export function StaffList({ onNavigate }: StaffListProps) {
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add Staff Member
+          {t.staff.addStaff}
         </button>
       </div>
 
@@ -116,21 +118,21 @@ export function StaffList({ onNavigate }: StaffListProps) {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading staff...</div>
+          <div className="p-8 text-center text-gray-500">{t.staff.loadingStaff}</div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
-            <p className="text-gray-500 font-medium">No staff members found</p>
-            <p className="text-gray-400 text-sm mt-1">Try a different filter or add a new staff member.</p>
+            <p className="text-gray-500 font-medium">{t.staff.noStaff}</p>
+            <p className="text-gray-400 text-sm mt-1">{t.staff.tryDifferentFilter}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Name', 'Role', 'Position', 'Phone', 'Email', 'License #', 'Status', 'Actions'].map(h => (
+                  {[t.common.name, t.staff.role, t.staff.position, t.common.phone, t.common.email, t.staff.license, t.common.status, t.common.actions].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
@@ -160,9 +162,9 @@ export function StaffList({ onNavigate }: StaffListProps) {
                     <td className="px-4 py-3 text-sm text-gray-500">{member.license_number || '—'}</td>
                     <td className="px-4 py-3">
                       {member.is_active !== false ? (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">Active</span>
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">{t.staff.active}</span>
                       ) : (
-                        <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">Inactive</span>
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">{t.staff.inactive}</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -171,7 +173,7 @@ export function StaffList({ onNavigate }: StaffListProps) {
                           onClick={() => handleEdit(member)}
                           className="text-xs text-gray-600 border border-gray-300 px-2 py-1 rounded hover:bg-gray-50"
                         >
-                          Edit
+                          {t.common.edit}
                         </button>
                         <button
                           onClick={() => toggleActive(member)}
@@ -181,7 +183,7 @@ export function StaffList({ onNavigate }: StaffListProps) {
                               : 'text-green-600 border-green-200 hover:bg-green-50'
                           }`}
                         >
-                          {member.is_active !== false ? 'Deactivate' : 'Reactivate'}
+                          {member.is_active !== false ? t.staff.deactivate : t.staff.reactivate}
                         </button>
                       </div>
                     </td>
@@ -195,7 +197,7 @@ export function StaffList({ onNavigate }: StaffListProps) {
 
       {/* Note about soft delete */}
       <p className="text-xs text-gray-400 text-center">
-        Staff members are never deleted — only deactivated to preserve historical records.
+        {t.staff.staffNeverDeleted}
       </p>
 
       {showForm && (

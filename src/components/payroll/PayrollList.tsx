@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, Staff, PayrollRecord, TimeEntry } from '../../db/dexie';
 import { formatDate } from '../../lib/utils';
+import { useLanguage } from '../../lib/i18n';
 
 interface PayrollListProps {
   onNavigate?: (page: string, params?: Record<string, string>) => void;
@@ -42,6 +43,7 @@ interface GenerateModalProps {
 }
 
 function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
+  const { t } = useLanguage();
   const [step, setStep] = useState<'period' | 'staff' | 'review' | 'saving'>('period');
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
@@ -145,7 +147,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-gray-900">Generate Payroll</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t.payroll.generate}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -155,7 +157,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
 
         {/* Steps indicator */}
         <div className="px-6 pt-4 flex items-center gap-2">
-          {['Period', 'Staff', 'Review'].map((label, i) => {
+          {[t.payroll.payPeriod, t.payroll.selectStaff, t.common.view].map((label, i) => {
             const stepIds = ['period', 'staff', 'review', 'saving'];
             const idx = stepIds.indexOf(step);
             const active = i <= idx;
@@ -177,19 +179,19 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
           {/* Step 1: Period */}
           {step === 'period' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Select the pay period for this payroll run.</p>
+              <p className="text-sm text-gray-600">{t.payroll.selectPayPeriod}</p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Period Start</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.payroll.periodStart}</label>
                   <input type="date" className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500" value={periodStart} onChange={e => setPeriodStart(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Period End</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.payroll.periodEnd}</label>
                   <input type="date" className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} />
                 </div>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-2">Quick select:</p>
+                <p className="text-xs text-gray-500 mb-2">{t.payroll.quickSelect}</p>
                 <div className="flex flex-wrap gap-2">
                   {generatePayPeriods().slice(0, 4).map(p => (
                     <button
@@ -204,7 +206,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
               </div>
               <div className="flex justify-end">
                 <button onClick={handleNext} className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium">
-                  Next: Select Staff
+                  {t.payroll.nextSelectStaff}
                 </button>
               </div>
             </div>
@@ -213,9 +215,9 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
           {/* Step 2: Staff */}
           {step === 'staff' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Select staff members to include in this payroll run.</p>
+              <p className="text-sm text-gray-600">{t.payroll.selectStaffMembers}</p>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">{selectedIds.size} of {allStaff.length} selected</span>
+                <span className="text-sm font-medium text-gray-700">{selectedIds.size} {t.payroll.of} {allStaff.length} {t.payroll.selected}</span>
                 <button
                   onClick={() => {
                     if (selectedIds.size === allStaff.length) setSelectedIds(new Set());
@@ -223,7 +225,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
                   }}
                   className="text-xs text-teal-600 hover:underline"
                 >
-                  {selectedIds.size === allStaff.length ? 'Deselect All' : 'Select All'}
+                  {selectedIds.size === allStaff.length ? t.payroll.deselectAll : t.payroll.selectAll}
                 </button>
               </div>
               <div className="border border-gray-200 rounded-md divide-y divide-gray-100 max-h-64 overflow-y-auto">
@@ -237,15 +239,15 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium text-gray-900">{s.first_name} {s.last_name}</div>
-                      <div className="text-xs text-gray-500">{s.role} {s.hourly_rate ? `· $${s.hourly_rate}/hr` : '· No rate set'}</div>
+                      <div className="text-xs text-gray-500">{s.role} {s.hourly_rate ? `· $${s.hourly_rate}/hr` : `· ${t.payroll.noRateSet}`}</div>
                     </div>
                   </label>
                 ))}
               </div>
               <div className="flex justify-between">
-                <button onClick={() => setStep('period')} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">Back</button>
+                <button onClick={() => setStep('period')} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">{t.payroll.back}</button>
                 <button onClick={handleCalculate} className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium">
-                  Calculate Payroll
+                  {t.payroll.calculatePayroll}
                 </button>
               </div>
             </div>
@@ -254,12 +256,12 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
           {/* Step 3: Review */}
           {step === 'review' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Review and adjust payroll before saving. Deductions can be edited.</p>
+              <p className="text-sm text-gray-600">{t.payroll.reviewAdjust}</p>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['Employee', 'Reg Hrs', 'OT Hrs', 'Rate', 'Gross Pay', 'Deductions', 'Net Pay'].map(h => (
+                      {[t.payroll.employee2, t.payroll.regHrs, t.payroll.otHrs, t.payroll.rate, t.payroll.grossPay, t.payroll.deductions, t.payroll.netPay].map(h => (
                         <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
@@ -288,7 +290,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
                   </tbody>
                   <tfoot className="bg-gray-50">
                     <tr>
-                      <td className="px-3 py-2 font-semibold" colSpan={4}>Totals</td>
+                      <td className="px-3 py-2 font-semibold" colSpan={4}>{t.payroll.totals}</td>
                       <td className="px-3 py-2 font-semibold">{formatCurrency(draftRecords.reduce((s, r) => s + r.gross_pay, 0))}</td>
                       <td className="px-3 py-2 font-semibold">{formatCurrency(draftRecords.reduce((s, r) => s + r.deductions, 0))}</td>
                       <td className="px-3 py-2 font-bold text-teal-700">{formatCurrency(draftRecords.reduce((s, r) => s + r.net_pay, 0))}</td>
@@ -297,16 +299,16 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
                 </table>
               </div>
               <div className="flex justify-between">
-                <button onClick={() => setStep('staff')} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">Back</button>
+                <button onClick={() => setStep('staff')} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">{t.payroll.back}</button>
                 <button onClick={handleSave} className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium">
-                  Save {draftRecords.length} Payroll Records
+                  {t.payroll.save} {draftRecords.length} {t.payroll.payrollRecords}
                 </button>
               </div>
             </div>
           )}
 
           {step === 'saving' && (
-            <div className="py-12 text-center text-gray-500">Saving payroll records...</div>
+            <div className="py-12 text-center text-gray-500">{t.payroll.savingRecords}</div>
           )}
         </div>
       </div>
@@ -315,6 +317,7 @@ function GenerateModal({ onClose, onGenerated }: GenerateModalProps) {
 }
 
 export function PayrollList({ onNavigate }: PayrollListProps) {
+  const { t } = useLanguage();
   const [records, setRecords] = useState<(PayrollRecord & { staffName: string })[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [showGenerate, setShowGenerate] = useState(false);
@@ -426,9 +429,9 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
   };
 
   const statusBadge = (status: PayrollRecord['status']) => {
-    if (status === 'draft') return <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">Draft</span>;
-    if (status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">Approved</span>;
-    return <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Paid</span>;
+    if (status === 'draft') return <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.draft}</span>;
+    if (status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.approved}</span>;
+    return <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">{t.payroll.status.paid}</span>;
   };
 
   return (
@@ -436,8 +439,8 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Payroll</h1>
-          <p className="text-sm text-gray-500 mt-1">{records.length} total records</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.payroll.title}</h1>
+          <p className="text-sm text-gray-500 mt-1">{records.length} {t.payroll.totalRecords}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -447,7 +450,7 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
             </svg>
-            Print All
+            {t.payroll.printAll}
           </button>
           <button
             onClick={() => setShowGenerate(true)}
@@ -456,7 +459,7 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Generate Payroll
+            {t.payroll.generate}
           </button>
         </div>
       </div>
@@ -471,7 +474,7 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
               statusFilter === s ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+            {s === 'all' ? t.common.all : t.payroll.status[s as keyof typeof t.payroll.status]}
           </button>
         ))}
       </div>
@@ -479,21 +482,21 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading payroll records...</div>
+          <div className="p-8 text-center text-gray-500">{t.payroll.loadingPayroll}</div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-gray-500 font-medium">No payroll records found</p>
-            <p className="text-gray-400 text-sm mt-1">Use "Generate Payroll" to create payroll records from time entries.</p>
+            <p className="text-gray-500 font-medium">{t.payroll.noPayroll}</p>
+            <p className="text-gray-400 text-sm mt-1">{t.payroll.useGenerate}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Staff Name', 'Pay Period', 'Reg Hrs', 'OT Hrs', 'Gross Pay', 'Deductions', 'Net Pay', 'Status', 'Actions'].map(h => (
+                  {[t.payroll.staffName, t.payroll.payPeriod, t.payroll.regHrs, t.payroll.otHrs, t.payroll.grossPay, t.payroll.deductions, t.payroll.netPay, t.common.status, t.common.actions].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -517,14 +520,14 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
                           onClick={() => onNavigate?.('payroll-detail', { payrollId: rec.id!.toString() })}
                           className="text-xs text-gray-600 border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 whitespace-nowrap"
                         >
-                          View
+                          {t.payroll.view}
                         </button>
                         {rec.status === 'draft' && (
                           <button
                             onClick={() => handleApprove(rec)}
                             className="text-xs text-yellow-700 border border-yellow-300 px-2 py-1 rounded hover:bg-yellow-50 whitespace-nowrap"
                           >
-                            Approve
+                            {t.payroll.approve}
                           </button>
                         )}
                         {rec.status === 'approved' && (
@@ -532,7 +535,7 @@ export function PayrollList({ onNavigate }: PayrollListProps) {
                             onClick={() => handleMarkPaid(rec)}
                             className="text-xs text-green-700 border border-green-300 px-2 py-1 rounded hover:bg-green-50 whitespace-nowrap"
                           >
-                            Mark Paid
+                            {t.payroll.markPaidBtn}
                           </button>
                         )}
                       </div>

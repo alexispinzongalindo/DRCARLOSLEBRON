@@ -5,6 +5,7 @@ import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
 import { formatDate, calculateAge, debounce } from '../../lib/utils';
 import type { Patient } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface PatientListProps {
   onSelectPatient?: (patient: Patient) => void;
@@ -13,6 +14,7 @@ interface PatientListProps {
 
 export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps) {
   const { hasPermission } = useAuthStore();
+  const { t } = useLanguage();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -67,7 +69,7 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
   if (!hasPermission('patients:read')) {
     return (
       <div className="p-6 text-center">
-        <p className="text-red-600">You don't have permission to view patients.</p>
+        <p className="text-red-600">{t.patients.noPermission}</p>
       </div>
     );
   }
@@ -77,10 +79,10 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Patients</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t.patients.title}</h2>
           {hasPermission('patients:write') && (
             <Button onClick={handleNewPatient}>
-              New Patient
+              {t.patients.newPatient}
             </Button>
           )}
         </div>
@@ -89,7 +91,7 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
         <div className="mt-4">
           <Input
             type="text"
-            placeholder="Search by name, MRN, DOB, or phone..."
+            placeholder={t.patients.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full"
@@ -118,14 +120,14 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No patients found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">{t.patients.noPatients}</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchQuery ? 'Try adjusting your search criteria.' : 'Get started by adding a new patient.'}
+              {searchQuery ? t.patients.tryAdjusting : t.patients.getStarted}
             </p>
             {hasPermission('patients:write') && !searchQuery && (
               <div className="mt-6">
                 <Button onClick={handleNewPatient}>
-                  Add New Patient
+                  {t.patients.addNewPatient}
                 </Button>
               </div>
             )}
@@ -156,7 +158,7 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
                         <span>MRN: {patient.mrn}</span>
                         <span>DOB: {formatDate(patient.dob)}</span>
-                        <span>Age: {calculateAge(patient.dob)}</span>
+                        <span>{t.patients.ageLabel} {calculateAge(patient.dob)}</span>
                         <span className="capitalize">{patient.sex}</span>
                       </div>
                       {patient.phone && (
@@ -189,8 +191,8 @@ export function PatientList({ onSelectPatient, onNewPatient }: PatientListProps)
       {patients.length > 0 && (
         <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
           <p className="text-sm text-gray-600">
-            Showing {patients.length} patient{patients.length !== 1 ? 's' : ''}
-            {searchQuery && ` matching "${searchQuery}"`}
+            {t.patients.showing} {patients.length} {patients.length !== 1 ? t.patients.patients : t.patients.patient}
+            {searchQuery && ` ${t.patients.matching} "${searchQuery}"`}
           </p>
         </div>
       )}

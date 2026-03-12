@@ -5,6 +5,7 @@ import { db } from '../../db/dexie';
 import { useAuthStore } from '../../store/authStore';
 import { isGoogleCalendarConnected, createCalendarEvent } from '../../lib/googleCalendar';
 import type { Patient, Staff, Appointment } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface AppointmentFormProps {
   onSave: (appointment: Appointment) => void;
@@ -14,6 +15,7 @@ interface AppointmentFormProps {
 
 export function AppointmentForm({ onSave, onCancel, existingAppointment }: AppointmentFormProps) {
   const { staff } = useAuthStore();
+  const { t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [staffMembers, setStaffMembers] = useState<Staff[]>([]);
@@ -150,21 +152,21 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
       {/* Header */}
       <div className="bg-blue-50 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          {existingAppointment ? 'Edit Appointment' : 'Schedule New Appointment'}
+          {existingAppointment ? t.appointments.editAppointment : t.appointments.scheduleNew}
         </h2>
         <p className="text-gray-600 mt-2">
-          {existingAppointment ? 'Update appointment details' : 'Schedule a new patient appointment'}
+          {existingAppointment ? t.appointments.updateDetails : t.appointments.scheduleNew}
         </p>
       </div>
 
       {/* Appointment Details */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Appointment Details</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t.appointments.details}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Patient <span className="text-red-500">*</span>
+              {t.appointments.patient} <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedPatientId}
@@ -172,7 +174,7 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
-              <option value="">Select a patient</option>
+              <option value="">{t.appointments.selectPatient}</option>
               {patients.map(patient => (
                 <option key={patient.id} value={patient.id}>
                   {patient.first_name} {patient.last_name} - {patient.mrn}
@@ -183,14 +185,14 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Therapist
+              {t.appointments.therapist}
             </label>
             <select
               value={selectedStaffId}
               onChange={(e) => setSelectedStaffId(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">Select therapist</option>
+              <option value="">{t.appointments.selectTherapist}</option>
               {staffMembers.filter(s => s.role === 'therapist' || s.role === 'admin').map(member => (
                 <option key={member.id} value={member.id}>
                   {member.first_name} {member.last_name} ({member.role})
@@ -203,7 +205,7 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date <span className="text-red-500">*</span>
+              {t.common.date} <span className="text-red-500">*</span>
             </label>
             <Input
               type="date"
@@ -215,7 +217,7 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Start Time <span className="text-red-500">*</span>
+              {t.appointments.startTime} <span className="text-red-500">*</span>
             </label>
             <Input
               type="time"
@@ -226,7 +228,7 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Time <span className="text-red-500">*</span>
+              {t.appointments.endTime} <span className="text-red-500">*</span>
             </label>
             <Input
               type="time"
@@ -239,43 +241,43 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.appointments.appointmentType}</label>
             <select
               value={appointmentType}
               onChange={(e) => setAppointmentType(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="Evaluation">Evaluation</option>
-              <option value="Treatment">Treatment</option>
-              <option value="Re-evaluation">Re-evaluation</option>
-              <option value="Discharge">Discharge</option>
-              <option value="Consultation">Consultation</option>
+              <option value="Evaluation">{t.appointments.types.evaluation}</option>
+              <option value="Treatment">{t.appointments.types.treatment}</option>
+              <option value="Re-evaluation">{t.appointments.types.reEvaluation}</option>
+              <option value="Discharge">{t.appointments.types.discharge}</option>
+              <option value="Consultation">{t.appointments.types.consultation}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.common.status}</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="scheduled">Scheduled</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="checked_in">Checked In</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="no_show">No Show</option>
+              <option value="scheduled">{t.appointments.status.scheduled}</option>
+              <option value="confirmed">{t.appointments.status.confirmed}</option>
+              <option value="checked_in">{t.appointments.status.checked_in}</option>
+              <option value="completed">{t.appointments.status.completed}</option>
+              <option value="cancelled">{t.appointments.status.cancelled}</option>
+              <option value="no_show">{t.appointments.status.no_show}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t.appointments.notes}</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full h-24 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Additional notes about the appointment..."
+            placeholder={t.appointments.notesPlaceholder}
           />
         </div>
       </div>
@@ -283,10 +285,10 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
       {/* Action Buttons */}
       <div className="flex justify-end space-x-4">
         <Button variant="outline" onClick={onCancel}>
-          Cancel
+          {t.common.cancel}
         </Button>
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? 'Saving...' : existingAppointment ? 'Update Appointment' : 'Schedule Appointment'}
+          {isSaving ? t.appointments.saving : existingAppointment ? t.appointments.updateAppointment : t.appointments.scheduleAppointment}
         </Button>
       </div>
     </div>

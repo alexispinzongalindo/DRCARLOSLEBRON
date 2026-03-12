@@ -5,6 +5,7 @@ import { db } from '../../db/dexie';
 import { formatDate, formatTime, calculateAge } from '../../lib/utils';
 import { useAuthStore } from '../../store/authStore';
 import type { Patient, Appointment, Encounter, SOAPNote, ClinicalNote } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface PatientDetailProps {
   patientId: string;
@@ -26,6 +27,7 @@ interface EncounterWithNote extends Encounter {
 export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointment, onCreateEncounter }: PatientDetailProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
   const { staff } = useAuthStore();
+  const { t } = useLanguage();
   const [appointments, setAppointments] = useState<AppointmentWithStatus[]>([]);
   const [encounters, setEncounters] = useState<EncounterWithNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,8 +193,8 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
   if (!patient) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Patient not found</p>
-        <Button onClick={onClose} className="mt-4">Back to Patients</Button>
+        <p className="text-gray-500">{t.patients.patientNotFound}</p>
+        <Button onClick={onClose} className="mt-4">{t.patients.backToPatients}</Button>
       </div>
     );
   }
@@ -208,48 +210,48 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
             </h1>
             <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
               <div>
-                <span className="font-medium">MRN:</span> {patient.mrn}
+                <span className="font-medium">{t.patients.mrn}:</span> {patient.mrn}
               </div>
               <div>
-                <span className="font-medium">DOB:</span> {formatDate(patient.dob)}
+                <span className="font-medium">{t.patients.dateOfBirth}:</span> {formatDate(patient.dob)}
               </div>
               <div>
-                <span className="font-medium">Age:</span> {calculateAge(patient.dob)}
+                <span className="font-medium">{t.patients.ageLabel}</span> {calculateAge(patient.dob)}
               </div>
               <div>
-                <span className="font-medium">Sex:</span> {patient.sex}
+                <span className="font-medium">{t.patients.sex}:</span> {patient.sex}
               </div>
               {patient.phone && (
                 <div>
-                  <span className="font-medium">Phone:</span> {patient.phone}
+                  <span className="font-medium">{t.common.phone}:</span> {patient.phone}
                 </div>
               )}
               {patient.email && (
                 <div>
-                  <span className="font-medium">Email:</span> {patient.email}
+                  <span className="font-medium">{t.common.email}:</span> {patient.email}
                 </div>
               )}
               {patient.insurance_id && (
                 <div>
-                  <span className="font-medium">Insurance:</span> {patient.insurance_id}
+                  <span className="font-medium">{t.patients.insurance}:</span> {patient.insurance_id}
                 </div>
               )}
               {patient.emergency_contact && (
                 <div>
-                  <span className="font-medium">Emergency:</span> {patient.emergency_contact}
+                  <span className="font-medium">{t.patients.emergencyContact}:</span> {patient.emergency_contact}
                 </div>
               )}
             </div>
           </div>
           <div className="flex space-x-3">
             <Button variant="outline" onClick={onEdit}>
-              Edit Patient
+              {t.patients.editPatient}
             </Button>
             <Button onClick={onScheduleAppointment}>
-              Schedule Appointment
+              {t.patients.scheduleAppointment}
             </Button>
             <Button variant="outline" onClick={onClose}>
-              Close
+              {t.common.close}
             </Button>
           </div>
         </div>
@@ -260,11 +262,11 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
         <div className="border-b border-gray-200">
           <nav className="flex overflow-x-auto px-2 sm:px-6 scrollbar-hide">
             {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'appointments', label: `Appts (${appointments.length})` },
-              { id: 'encounters', label: `Encounters (${encounters.length})` },
-              { id: 'evaluations', label: 'Evaluations' },
-              { id: 'notes', label: 'Notes' }
+              { id: 'overview', label: t.patients.overview },
+              { id: 'appointments', label: `${t.patients.appointments} (${appointments.length})` },
+              { id: 'encounters', label: `${t.patients.encounters} (${encounters.length})` },
+              { id: 'evaluations', label: t.patients.evaluations },
+              { id: 'notes', label: t.patients.notes }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -289,63 +291,63 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-blue-600">{appointments.length}</div>
-                  <div className="text-sm text-blue-600">Total Appointments</div>
+                  <div className="text-sm text-blue-600">{t.patients.totalAppointments}</div>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-green-600">
                     {appointments.filter(a => a.status === 'completed').length}
                   </div>
-                  <div className="text-sm text-green-600">Completed</div>
+                  <div className="text-sm text-green-600">{t.patients.completed}</div>
                 </div>
                 <div className="bg-yellow-50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-yellow-600">
                     {encounters.filter(e => !e.hasNote).length}
                   </div>
-                  <div className="text-sm text-yellow-600">Pending Notes</div>
+                  <div className="text-sm text-yellow-600">{t.patients.pendingNotes}</div>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-purple-600">{encounters.length}</div>
-                  <div className="text-sm text-purple-600">Total Encounters</div>
+                  <div className="text-sm text-purple-600">{t.patients.totalEncounters}</div>
                 </div>
               </div>
 
               {/* Patient Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Contact Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{t.patients.contactInfo}</h3>
                   <div className="space-y-2 text-sm">
                     {patient.address && (
                       <div>
-                        <span className="font-medium">Address:</span> {patient.address}
+                        <span className="font-medium">{t.common.address}:</span> {patient.address}
                       </div>
                     )}
                     {patient.phone && (
                       <div>
-                        <span className="font-medium">Phone:</span> {patient.phone}
+                        <span className="font-medium">{t.common.phone}:</span> {patient.phone}
                       </div>
                     )}
                     {patient.email && (
                       <div>
-                        <span className="font-medium">Email:</span> {patient.email}
+                        <span className="font-medium">{t.common.email}:</span> {patient.email}
                       </div>
                     )}
                     {patient.emergency_contact && (
                       <div>
-                        <span className="font-medium">Emergency Contact:</span> {patient.emergency_contact}
+                        <span className="font-medium">{t.patients.emergencyContact}:</span> {patient.emergency_contact}
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Insurance Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{t.patients.insuranceInfo}</h3>
                   <div className="space-y-2 text-sm">
                     {patient.insurance_id ? (
                       <div>
-                        <span className="font-medium">Insurance ID:</span> {patient.insurance_id}
+                        <span className="font-medium">{t.patients.insuranceId}:</span> {patient.insurance_id}
                       </div>
                     ) : (
-                      <div className="text-gray-500">No insurance information on file</div>
+                      <div className="text-gray-500">{t.patients.noInsuranceOnFile}</div>
                     )}
                   </div>
                 </div>
@@ -353,7 +355,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
 
               {/* Recent Activity */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Recent Activity</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">{t.patients.recentActivity}</h3>
                 <div className="space-y-3">
                   {[...appointments, ...encounters]
                     .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
@@ -362,7 +364,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                           <div className="font-medium">
-                            {'appointment_date' in item ? 'Appointment' : 'Encounter'}
+                            {'appointment_date' in item ? t.patients.appointment : t.patients.encounter}
                           </div>
                           <div className="text-sm text-gray-600">
                             {'appointment_date' in item 
@@ -385,13 +387,13 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
           {activeTab === 'appointments' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Appointments</h3>
-                <Button onClick={onScheduleAppointment}>Schedule New</Button>
+                <h3 className="text-lg font-semibold text-gray-900">{t.patients.appointments}</h3>
+                <Button onClick={onScheduleAppointment}>{t.patients.scheduleNew}</Button>
               </div>
               
               {appointments.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No appointments scheduled
+                  {t.patients.noAppointmentsScheduled}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -424,13 +426,13 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
           {activeTab === 'encounters' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Clinical Encounters</h3>
-                <Button onClick={onCreateEncounter}>New Encounter</Button>
+                <h3 className="text-lg font-semibold text-gray-900">{t.patients.clinicalEncounters}</h3>
+                <Button onClick={onCreateEncounter}>{t.patients.newEncounter}</Button>
               </div>
               
               {encounters.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No encounters recorded
+                  {t.patients.noEncountersRecorded}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -445,7 +447,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                               {formatDate(encounter.encounter_date)}
                             </div>
                             {encounter.seen_by && (
-                              <div className="text-sm text-gray-600">Provider: {encounter.seen_by}</div>
+                              <div className="text-sm text-gray-600">{t.patients.provider} {encounter.seen_by}</div>
                             )}
                           </div>
                           <div className="flex items-center space-x-2">
@@ -456,7 +458,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                             </span>
                             {!encounter.hasNote && (
                               <Button size="sm" onClick={() => onCreateEncounter()}>
-                                Complete Note
+                                {t.patients.completeNote}
                               </Button>
                             )}
                           </div>
@@ -472,8 +474,8 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
           {activeTab === 'evaluations' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Evaluations & Clinical Records</h3>
-                <Button onClick={onCreateEncounter}>New Evaluation</Button>
+                <h3 className="text-lg font-semibold text-gray-900">{t.patients.evaluationsTitle}</h3>
+                <Button onClick={onCreateEncounter}>{t.patients.newEvaluation}</Button>
               </div>
               
               {/* Sample Evaluation based on Dr. Lebron's format */}
@@ -608,7 +610,7 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
 
               {/* Additional evaluations would be listed here */}
               <div className="text-center py-4 text-gray-500">
-                <p>Additional evaluations and progress notes will appear here as they are completed.</p>
+                <p>{t.patients.additionalEvaluations}</p>
               </div>
             </div>
           )}
@@ -617,17 +619,17 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
           {activeTab === 'notes' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Clinical Notes</h3>
-                <Button onClick={() => openNoteForm()}>+ Add Note</Button>
+                <h3 className="text-lg font-semibold text-gray-900">{t.patients.clinicalNotes}</h3>
+                <Button onClick={() => openNoteForm()}>{t.patients.addNote}</Button>
               </div>
 
               {/* Add / Edit Form */}
               {showNoteForm && (
                 <div className="border border-teal-200 rounded-lg p-4 bg-teal-50 space-y-3">
-                  <h4 className="text-sm font-semibold text-teal-800">{editingNote ? 'Edit Note' : 'New Clinical Note'}</h4>
+                  <h4 className="text-sm font-semibold text-teal-800">{editingNote ? t.patients.editNote : t.patients.newClinicalNote}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Note Type</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">{t.patients.noteType}</label>
                       <select value={noteType} onChange={e => setNoteType(e.target.value as ClinicalNote['note_type'])}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-teal-500">
                         {(Object.entries(NOTE_TYPE_LABELS) as [ClinicalNote['note_type'], string][]).map(([v, l]) => (
@@ -636,22 +638,22 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">{t.common.date}</label>
                       <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Note</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">{t.patients.noteLabel}</label>
                     <textarea rows={4} value={noteContent} onChange={e => setNoteContent(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 resize-none"
                       placeholder="Enter clinical note..." />
                   </div>
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => setShowNoteForm(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+                    <button onClick={() => setShowNoteForm(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">{t.common.cancel}</button>
                     <button onClick={saveNote} disabled={isSavingNote || !noteContent.trim()}
                       className="px-4 py-2 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50">
-                      {isSavingNote ? 'Saving…' : 'Save Note'}
+                      {isSavingNote ? t.common.loading : t.patients.saveNote}
                     </button>
                   </div>
                 </div>
@@ -660,8 +662,8 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
               {/* Notes List */}
               {clinicalNotes.length === 0 && !showNoteForm ? (
                 <div className="text-center py-10 text-gray-400">
-                  <p className="text-sm">No clinical notes yet.</p>
-                  <button onClick={() => openNoteForm()} className="mt-2 text-teal-600 text-sm hover:underline">Add the first note</button>
+                  <p className="text-sm">{t.patients.noNotesYet}</p>
+                  <button onClick={() => openNoteForm()} className="mt-2 text-teal-600 text-sm hover:underline">{t.patients.addFirstNote}</button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -675,8 +677,8 @@ export function PatientDetail({ patientId, onEdit, onClose, onScheduleAppointmen
                           <span className="text-xs text-gray-400">{formatDate(note.note_date)}</span>
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
-                          <button onClick={() => openNoteForm(note)} className="text-xs text-teal-600 hover:underline">Edit</button>
-                          <button onClick={() => deleteNote(note.id)} className="text-xs text-red-500 hover:underline">Delete</button>
+                          <button onClick={() => openNoteForm(note)} className="text-xs text-teal-600 hover:underline">{t.common.edit}</button>
+                          <button onClick={() => deleteNote(note.id)} className="text-xs text-red-500 hover:underline">{t.common.delete}</button>
                         </div>
                       </div>
                       <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{note.content}</p>

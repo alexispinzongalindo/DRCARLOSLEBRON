@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, PayrollRecord, Staff } from '../../db/dexie';
 import { formatDate } from '../../lib/utils';
+import { useLanguage } from '../../lib/i18n';
 
 interface PayrollDetailProps {
   payrollId: string;
@@ -107,6 +108,7 @@ function printPayStub(record: PayrollRecord, member: Staff) {
 }
 
 export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
+  const { t } = useLanguage();
   const [record, setRecord] = useState<PayrollRecord | null>(null);
   const [member, setMember] = useState<Staff | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -178,11 +180,11 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
     loadRecord();
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500">{t.common.loading}</div>;
   if (!record || !member) return (
     <div className="p-8 text-center">
-      <p className="text-gray-500">Payroll record not found.</p>
-      <button onClick={onBack} className="mt-4 text-teal-600 hover:underline text-sm">Go Back</button>
+      <p className="text-gray-500">{t.payroll.recordNotFound}</p>
+      <button onClick={onBack} className="mt-4 text-teal-600 hover:underline text-sm">{t.payroll.goBack}</button>
     </div>
   );
 
@@ -192,9 +194,9 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
   const { gross: displayGross, net: displayNet } = recalculate(displayRate, displayDed);
 
   const statusBadge = () => {
-    if (record.status === 'draft') return <span className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">Draft</span>;
-    if (record.status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">Approved</span>;
-    return <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">Paid</span>;
+    if (record.status === 'draft') return <span className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">{t.payroll.status.draft}</span>;
+    if (record.status === 'approved') return <span className="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">{t.payroll.status.approved}</span>;
+    return <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">{t.payroll.status.paid}</span>;
   };
 
   const emailSubject = encodeURIComponent(`Pay Stub — ${record.pay_period_start} to ${record.pay_period_end}`);
@@ -208,11 +210,11 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Back to Payroll
+          {t.payroll.backToPayroll}
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Pay Stub</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{member.first_name} {member.last_name} · {formatDate(record.pay_period_start)} to {formatDate(record.pay_period_end)}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.payroll.payStub}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{member.first_name} {member.last_name} · {formatDate(record.pay_period_start)} {t.staff.to} {formatDate(record.pay_period_end)}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {statusBadge()}
@@ -223,7 +225,7 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
             </svg>
-            Print
+            {t.common.print}
           </button>
           {member.email && (
             <a
@@ -233,7 +235,7 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
-              Email
+              {t.common.email}
             </a>
           )}
         </div>
@@ -251,32 +253,32 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
           {/* Employee Info */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Employee</div>
+              <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">{t.payroll.employee}</div>
               <div className="font-semibold text-gray-900">{member.first_name} {member.last_name}</div>
               <div className="text-gray-500">{member.role}</div>
             </div>
             <div>
-              <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Pay Period</div>
+              <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">{t.payroll.payPeriod}</div>
               <div className="font-semibold text-gray-900">{formatDate(record.pay_period_start)}</div>
-              <div className="text-gray-500">to {formatDate(record.pay_period_end)}</div>
+              <div className="text-gray-500">{t.staff.to} {formatDate(record.pay_period_end)}</div>
             </div>
           </div>
 
           {/* Hours & Earnings */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Hours &amp; Earnings</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.payroll.hoursAndEarnings}</h3>
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="px-4 py-2 text-left">Description</th>
-                  <th className="px-4 py-2 text-right">Hours</th>
-                  <th className="px-4 py-2 text-right">Rate</th>
-                  <th className="px-4 py-2 text-right">Amount</th>
+                  <th className="px-4 py-2 text-left">{t.payroll.description}</th>
+                  <th className="px-4 py-2 text-right">{t.payroll.hours}</th>
+                  <th className="px-4 py-2 text-right">{t.payroll.rate}</th>
+                  <th className="px-4 py-2 text-right">{t.payroll.amount}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 <tr>
-                  <td className="px-4 py-3">Regular Hours</td>
+                  <td className="px-4 py-3">{t.payroll.regularHoursRow}</td>
                   <td className="px-4 py-3 text-right">{record.regular_hours.toFixed(2)}</td>
                   <td className="px-4 py-3 text-right">
                     {editMode ? (
@@ -296,14 +298,14 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
                 </tr>
                 {record.overtime_hours > 0 && (
                   <tr>
-                    <td className="px-4 py-3">Overtime Hours (1.5x)</td>
+                    <td className="px-4 py-3">{t.payroll.overtimeHours15x}</td>
                     <td className="px-4 py-3 text-right">{record.overtime_hours.toFixed(2)}</td>
                     <td className="px-4 py-3 text-right">{formatCurrency(editMode ? hourlyRate * 1.5 : otRate)}/hr</td>
                     <td className="px-4 py-3 text-right">{formatCurrency(record.overtime_hours * (editMode ? hourlyRate * 1.5 : otRate))}</td>
                   </tr>
                 )}
                 <tr className="bg-gray-50 font-semibold">
-                  <td className="px-4 py-3" colSpan={3}>Gross Pay</td>
+                  <td className="px-4 py-3" colSpan={3}>{t.payroll.grossPay}</td>
                   <td className="px-4 py-3 text-right">{formatCurrency(editMode ? displayGross : record.gross_pay)}</td>
                 </tr>
               </tbody>
@@ -312,9 +314,9 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
 
           {/* Deductions */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Deductions</h3>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{t.payroll.deductionsSection}</h3>
             <div className="flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-              <span className="text-sm text-gray-700">Total Deductions</span>
+              <span className="text-sm text-gray-700">{t.payroll.totalDeductions}</span>
               {editMode ? (
                 <input
                   type="number"
@@ -333,7 +335,7 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
           {/* Notes */}
           {editMode ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.payroll.notesLabel}</label>
               <textarea
                 className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500"
                 rows={2}
@@ -343,13 +345,13 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
             </div>
           ) : record.notes ? (
             <div className="text-sm text-gray-600">
-              <span className="font-medium">Notes: </span>{record.notes}
+              <span className="font-medium">{t.payroll.notesLabel}: </span>{record.notes}
             </div>
           ) : null}
 
           {/* Net Pay */}
           <div className="border-t-2 border-teal-200 pt-4 text-center">
-            <div className="text-sm text-gray-500 uppercase tracking-wider mb-1">Net Pay</div>
+            <div className="text-sm text-gray-500 uppercase tracking-wider mb-1">{t.payroll.netPay}</div>
             <div className="text-4xl font-bold text-teal-600">{formatCurrency(editMode ? displayNet : record.net_pay)}</div>
           </div>
 
@@ -357,10 +359,10 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
           {(record.approved_at || record.paid_at) && (
             <div className="border-t border-gray-100 pt-4 grid grid-cols-2 gap-4 text-xs text-gray-500">
               {record.approved_at && (
-                <div><span className="font-medium">Approved:</span> {new Date(record.approved_at).toLocaleString()}</div>
+                <div><span className="font-medium">{t.payroll.approved}</span> {new Date(record.approved_at).toLocaleString()}</div>
               )}
               {record.paid_at && (
-                <div><span className="font-medium">Paid:</span> {new Date(record.paid_at).toLocaleString()}</div>
+                <div><span className="font-medium">{t.payroll.paidAt}</span> {new Date(record.paid_at).toLocaleString()}</div>
               )}
             </div>
           )}
@@ -375,13 +377,13 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
               onClick={() => setEditMode(true)}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Edit
+              {t.payroll.edit}
             </button>
             <button
               onClick={handleApprove}
               className="px-4 py-2 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600"
             >
-              Approve
+              {t.payroll.approve}
             </button>
           </>
         )}
@@ -390,7 +392,7 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
             onClick={handleMarkPaid}
             className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
           >
-            Mark as Paid
+            {t.payroll.markPaid}
           </button>
         )}
         {editMode && (
@@ -399,14 +401,14 @@ export function PayrollDetail({ payrollId, onBack }: PayrollDetailProps) {
               onClick={() => { setEditMode(false); setDeductions(record.deductions); setHourlyRate(record.hourly_rate); setNotes(record.notes ?? ''); }}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               onClick={saveEdits}
               disabled={saving}
               className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t.payroll.saving : t.payroll.saveChanges}
             </button>
           </>
         )}

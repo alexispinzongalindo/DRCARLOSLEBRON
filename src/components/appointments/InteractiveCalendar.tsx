@@ -4,6 +4,7 @@ import { db } from '../../db/dexie';
 import { formatDate, formatTime } from '../../lib/utils';
 import { getGoogleAuthUrl, isGoogleCalendarConnected, disconnectGoogleCalendar } from '../../lib/googleCalendar';
 import type { Appointment, Patient, Staff } from '../../db/dexie';
+import { useLanguage } from '../../lib/i18n';
 
 interface AppointmentWithDetails extends Appointment {
   patientName: string;
@@ -17,6 +18,7 @@ interface CalendarProps {
 }
 
 export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: CalendarProps) {
+  const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointments, setAppointments] = useState<AppointmentWithDetails[]>([]);
@@ -296,7 +298,7 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Appointment Calendar</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t.appointments.title}</h1>
           <p className="text-gray-600">{getDateRangeText()}</p>
         </div>
         <div className="flex space-x-3">
@@ -305,18 +307,18 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
               variant="outline"
               onClick={() => { disconnectGoogleCalendar(); setGoogleConnected(false); }}
             >
-              ✓ Google Calendar Connected
+              {t.appointments.googleConnected}
             </Button>
           ) : (
             <Button
               variant="outline"
               onClick={() => { window.location.href = getGoogleAuthUrl(); }}
             >
-              Connect Google Calendar
+              {t.appointments.connectGoogle}
             </Button>
           )}
           <Button variant="outline" onClick={onNewAppointment}>
-            New Appointment
+            {t.appointments.newAppointment}
           </Button>
         </div>
       </div>
@@ -325,13 +327,13 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
       <div className="flex justify-between items-center bg-white rounded-lg shadow p-4">
         <div className="flex items-center space-x-4">
           <Button variant="outline" onClick={() => navigateDate('prev')}>
-            ← Previous
+            {t.appointments.nav.previous}
           </Button>
           <Button variant="outline" onClick={goToToday}>
-            Today
+            {t.appointments.nav.today}
           </Button>
           <Button variant="outline" onClick={() => navigateDate('next')}>
-            Next →
+            {t.appointments.nav.next}
           </Button>
         </div>
         
@@ -343,7 +345,7 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
               onClick={() => setViewMode(mode)}
               size="sm"
             >
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              {t.appointments.views[mode]}
             </Button>
           ))}
         </div>
@@ -365,12 +367,12 @@ export function InteractiveCalendar({ onNewAppointment, onEditAppointment }: Cal
       {/* Appointment Summary */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          {viewMode === 'day' ? 'Today\'s Appointments' : 'Upcoming Appointments'}
+          {viewMode === 'day' ? t.appointments.todayAppointments : t.appointments.upcomingAppointments}
         </h2>
         
         {appointments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No appointments scheduled
+            {t.appointments.noAppointments}
           </div>
         ) : (
           <div className="space-y-3">
