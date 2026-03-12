@@ -103,7 +103,17 @@ export function AppointmentReminders() {
         const data = await response.json();
         if (!data.success) throw new Error(data.error || 'SMS failed');
       } else if (method === 'email' && appointment.patientEmail) {
-        window.open(`mailto:${appointment.patientEmail}?subject=Appointment Reminder - Optimum Therapy&body=${encodeURIComponent(message)}`);
+        const response = await fetch('/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: appointment.patientEmail,
+            subject: 'Appointment Reminder - Optimum Therapy',
+            message,
+          }),
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Email failed');
       } else if (method === 'call' && appointment.patientPhone) {
         window.open(`tel:${appointment.patientPhone}`);
       }

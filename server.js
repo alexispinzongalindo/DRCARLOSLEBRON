@@ -129,6 +129,41 @@ app.post('/api/sms/send', async (req, res) => {
   }
 });
 
+// Resend Email
+app.post('/api/email/send', async (req, res) => {
+  const { to, subject, message } = req.body;
+  const apiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Email not configured' });
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Optimum Therapy <noreply@optimumtherapypr.com>',
+        to: [to],
+        subject: subject || 'Appointment Reminder - Optimum Therapy',
+        text: message,
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      res.json({ success: true, id: data.id });
+    } else {
+      res.status(400).json({ error: data.message || 'Email failed' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Google OAuth token exchange
 app.post('/api/google/auth/token', async (req, res) => {
   const { code } = req.body;
