@@ -4,7 +4,7 @@ services:
     name: optimum-therapy-web
     env: node
     plan: pro # Included in Professional account
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
