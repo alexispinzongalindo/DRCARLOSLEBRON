@@ -20,7 +20,7 @@ import { PayrollList } from './components/payroll/PayrollList';
 import { PayrollDetail } from './components/payroll/PayrollDetail';
 import { seedDemoData } from './db/seedDemo';
 import { Training } from './components/training/Training';
-import type { Patient } from './db/dexie';
+import type { Patient, Appointment } from './db/dexie';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -90,6 +90,7 @@ function AppContent() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   const navigateTo = (page: string, params?: Record<string, string>) => {
     setPageParams(params ?? {});
@@ -117,8 +118,10 @@ function AppContent() {
         return (
           <InteractiveCalendar
             onNewAppointment={() => setCurrentPage('new-appointment')}
-            onEditAppointment={(appointmentId) => {
+            onEditAppointment={async (appointmentId) => {
+              const apt = await db.appointments.get(appointmentId);
               setSelectedAppointmentId(appointmentId);
+              setSelectedAppointment(apt ?? null);
               setCurrentPage('edit-appointment');
             }}
           />
@@ -134,20 +137,25 @@ function AppContent() {
           />
         );
       case 'edit-appointment':
-        return selectedAppointmentId ? (
+        return selectedAppointment ? (
           <AppointmentForm
-            existingAppointment={undefined} // TODO: Load appointment by ID
-            onSave={(appointment) => {
-              console.log('Appointment updated:', appointment);
+            existingAppointment={selectedAppointment}
+            onSave={() => {
+              setSelectedAppointment(null);
               setCurrentPage('appointments');
             }}
-            onCancel={() => setCurrentPage('appointments')}
+            onCancel={() => {
+              setSelectedAppointment(null);
+              setCurrentPage('appointments');
+            }}
           />
         ) : (
           <InteractiveCalendar
             onNewAppointment={() => setCurrentPage('new-appointment')}
-            onEditAppointment={(appointmentId) => {
+            onEditAppointment={async (appointmentId) => {
+              const apt = await db.appointments.get(appointmentId);
               setSelectedAppointmentId(appointmentId);
+              setSelectedAppointment(apt ?? null);
               setCurrentPage('edit-appointment');
             }}
           />
