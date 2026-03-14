@@ -6,6 +6,7 @@ import { COMPREHENSIVE_CPT_CODES as CPT_CODES } from '../../data/comprehensiveCl
 import { ICD10_PT_CODES as ICD10_CODES } from '../../data/icd10PT';
 import { INDEPENDENCE_LEVELS } from '../../data/clinicalCodes';
 import type { SOAPNote, Encounter, Patient, PatientDiagnosis } from '../../db/dexie';
+import { toast } from '../../lib/toast';
 
 interface EnhancedSOAPFormProps {
   encounterId: string;
@@ -469,7 +470,7 @@ export function EnhancedSOAPForm({ encounterId, onSave, onCancel }: EnhancedSOAP
       onSave();
     } catch (err) {
       console.error('Error saving SOAP note:', err);
-      alert('Error saving. Please try again.');
+      toast.error('Error saving. Please try again.');
     } finally {
       setIsSaving(false);
     }

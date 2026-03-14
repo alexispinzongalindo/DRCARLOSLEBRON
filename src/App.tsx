@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { LoginForm } from './components/auth/LoginForm';
+import { Toaster } from './components/shared/Toaster';
 import { exchangeCodeForToken } from './lib/googleCalendar';
 import { EnhancedSOAPForm } from './components/encounters/EnhancedSOAPForm';
 import { db } from './db/dexie';
@@ -129,8 +130,7 @@ function AppContent() {
       case 'new-appointment':
         return (
           <AppointmentForm
-            onSave={(appointment) => {
-              console.log('Appointment saved:', appointment);
+            onSave={() => {
               setCurrentPage('appointments');
             }}
             onCancel={() => setCurrentPage('appointments')}
@@ -163,8 +163,7 @@ function AppContent() {
       case 'new-patient':
         return (
           <PatientRegistrationForm
-            onSave={(patient) => {
-              console.log('Patient saved:', patient);
+            onSave={() => {
               setCurrentPage('patients');
             }}
             onCancel={() => setCurrentPage('patients')}
@@ -283,9 +282,12 @@ function AppContent() {
   };
 
   return (
-    <AppLayout currentPage={currentPage} onNavigate={(page) => navigateTo(page)}>
-      {renderPage()}
-    </AppLayout>
+    <>
+      <AppLayout currentPage={currentPage} onNavigate={(page) => navigateTo(page)}>
+        {renderPage()}
+      </AppLayout>
+      <Toaster />
+    </>
   );
 }
 

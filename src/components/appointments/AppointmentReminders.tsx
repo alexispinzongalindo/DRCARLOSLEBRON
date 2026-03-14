@@ -4,6 +4,7 @@ import { db } from '../../db/dexie';
 import { formatDate, formatTime } from '../../lib/utils';
 import type { Appointment, Patient } from '../../db/dexie';
 import { useLanguage } from '../../lib/i18n';
+import { toast } from '../../lib/toast';
 
 interface ReminderAppointment extends Appointment {
   patientName: string;
@@ -122,11 +123,11 @@ export function AppointmentReminders() {
         notes: (appointment.notes || '') + `\n${method.toUpperCase()} ${rx.sentVia} ${rx.on} ${new Date().toLocaleString()}`
       });
 
-      alert(`${method.toUpperCase()} ${rx.alertSent} ${appointment.patientName}`);
+      toast.success(`${method.toUpperCase()} ${rx.alertSent} ${appointment.patientName}`);
       loadUpcomingAppointments();
     } catch (error) {
       console.error('Error sending reminder:', error);
-      alert(rx.errorSending);
+      toast.error(rx.errorSending);
     }
   };
 
@@ -147,10 +148,10 @@ export function AppointmentReminders() {
           }
         }
       }
-      alert(`${rx.bulkSent} ${upcomingAppointments.length} ${rx.appointments}`);
+      toast.success(`${rx.bulkSent} ${upcomingAppointments.length} ${rx.appointments}`);
     } catch (error) {
       console.error('Error sending bulk reminders:', error);
-      alert(rx.errorBulk);
+      toast.error(rx.errorBulk);
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +166,7 @@ export function AppointmentReminders() {
       loadUpcomingAppointments();
     } catch (error) {
       console.error('Error confirming appointment:', error);
-      alert(rx.errorConfirm);
+      toast.error(rx.errorConfirm);
     }
   };
 

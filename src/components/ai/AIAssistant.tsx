@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useLanguage } from '../../lib/i18n';
+import { toast } from '../../lib/toast';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -150,13 +151,13 @@ export function AIAssistant({ currentPage, appointmentCount, pendingNotes, activ
     recognition.onerror  = (event: any) => {
       setListening(false);
       if (event.error === 'not-allowed') {
-        alert(lang === 'es'
+        toast.error(lang === 'es'
           ? 'Permiso de micrófono denegado. Permita el acceso al micrófono en la configuración del navegador.'
           : 'Microphone permission denied. Please allow microphone access in your browser settings.');
       } else if (event.error === 'no-speech') {
         // silent — user just didn't speak
       } else if (event.error === 'network') {
-        alert(lang === 'es'
+        toast.error(lang === 'es'
           ? 'Error de red en reconocimiento de voz. Verifique su conexión a internet.'
           : 'Network error in voice recognition. Please check your internet connection.');
       }

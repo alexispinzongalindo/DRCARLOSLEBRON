@@ -4,6 +4,7 @@ import { db } from '../../db/dexie';
 import { useAuthStore } from '../../store/authStore';
 import { formatDate, formatTime } from '../../lib/utils';
 import { useLanguage } from '../../lib/i18n';
+import { toast } from '../../lib/toast';
 
 interface TimeEntry {
   id?: string;
@@ -110,7 +111,7 @@ export function TimeClock() {
       loadTimeEntries();
     } catch (error) {
       console.error('Error clocking in:', error);
-      alert('Error clocking in. Please try again.');
+      toast.error('Error clocking in. Please try again.');
     }
   };
 
@@ -146,7 +147,7 @@ export function TimeClock() {
       loadTimeEntries();
     } catch (error) {
       console.error('Error clocking out:', error);
-      alert('Error clocking out. Please try again.');
+      toast.error('Error clocking out. Please try again.');
     }
   };
 
@@ -165,7 +166,7 @@ export function TimeClock() {
       setIsOnBreak(true);
     } catch (error) {
       console.error('Error starting break:', error);
-      alert('Error starting break. Please try again.');
+      toast.error('Error starting break. Please try again.');
     }
   };
 
@@ -184,7 +185,7 @@ export function TimeClock() {
       setIsOnBreak(false);
     } catch (error) {
       console.error('Error ending break:', error);
-      alert('Error ending break. Please try again.');
+      toast.error('Error ending break. Please try again.');
     }
   };
 

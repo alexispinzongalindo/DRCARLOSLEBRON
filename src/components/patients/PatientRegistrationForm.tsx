@@ -5,6 +5,7 @@ import { db } from '../../db/dexie';
 import { generateMRN } from '../../lib/utils';
 import type { Patient } from '../../db/dexie';
 import { useLanguage } from '../../lib/i18n';
+import { toast } from '../../lib/toast';
 
 interface PatientRegistrationFormProps {
   onSave: (patient: Patient) => void;
@@ -29,7 +30,7 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
 
   const handleSave = async () => {
     if (!firstName.trim() || !lastName.trim() || !dob) {
-      alert('Please fill in required fields: First Name, Last Name, and Date of Birth');
+      toast.error('Please fill in required fields: First Name, Last Name, and Date of Birth');
       return;
     }
 
@@ -70,7 +71,7 @@ export function PatientRegistrationForm({ onSave, onCancel, existingPatient }: P
       onSave(savedPatient);
     } catch (error) {
       console.error('Error saving patient:', error);
-      alert('Error saving patient. Please try again.');
+      toast.error('Error saving patient. Please try again.');
     } finally {
       setIsSaving(false);
     }

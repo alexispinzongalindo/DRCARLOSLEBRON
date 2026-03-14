@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { db } from '../../db/dexie';
 import { Button } from '../shared/Button';
 import { Input } from '../shared/Input';
+import { AppointmentForm } from './AppointmentForm';
 import { formatTime, formatDate } from '../../lib/utils';
 import type { Appointment, Patient, Staff } from '../../db/dexie';
 
@@ -30,6 +31,7 @@ export function AppointmentCalendar({ selectedDate, onDateChange }: AppointmentC
   const [selectedStaff, setSelectedStaff] = useState<string>('all');
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentWithDetails | null>(null);
 
   // Generate time slots from 7 AM to 7 PM
   const timeSlots: string[] = [];
@@ -129,8 +131,9 @@ export function AppointmentCalendar({ selectedDate, onDateChange }: AppointmentC
   };
 
   const handleAppointmentClick = (appointment: AppointmentWithDetails) => {
-    // Handle appointment click - could open edit modal or details view
-    console.log('Appointment clicked:', appointment);
+    if (hasPermission('appointments:write')) {
+      setEditingAppointment(appointment);
+    }
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -293,28 +296,34 @@ export function AppointmentCalendar({ selectedDate, onDateChange }: AppointmentC
         </div>
       </div>
 
-      {/* New Appointment Modal Placeholder */}
+      {/* New Appointment Modal */}
       {showNewAppointmentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">New Appointment</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Time: {selectedTimeSlot ? formatTime(selectedTimeSlot) : 'Not selected'}
-            </p>
-            <p className="text-sm text-gray-600 mb-4">
-              Date: {formatDate(currentDate)}
-            </p>
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={() => setShowNewAppointmentModal(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => {
-                // TODO: Implement appointment creation
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto py-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl mx-4 my-auto">
+            <AppointmentForm
+              existingAppointment={{ appointment_date: currentDate, start_time: selectedTimeSlot } as Appointment}
+              onSave={() => {
                 setShowNewAppointmentModal(false);
-              }}>
-                Create Appointment
-              </Button>
-            </div>
+                loadData();
+              }}
+              onCancel={() => setShowNewAppointmentModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Edit Appointment Modal */}
+      {editingAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto py-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl mx-4 my-auto">
+            <AppointmentForm
+              existingAppointment={editingAppointment}
+              onSave={() => {
+                setEditingAppointment(null);
+                loadData();
+              }}
+              onCancel={() => setEditingAppointment(null)}
+            />
           </div>
         </div>
       )}

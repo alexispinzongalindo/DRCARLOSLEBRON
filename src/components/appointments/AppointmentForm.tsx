@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { isGoogleCalendarConnected, createCalendarEvent } from '../../lib/googleCalendar';
 import type { Patient, Staff, Appointment } from '../../db/dexie';
 import { useLanguage } from '../../lib/i18n';
+import { toast } from '../../lib/toast';
 
 interface AppointmentFormProps {
   onSave: (appointment: Appointment) => void;
@@ -56,12 +57,12 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
 
   const handleSave = async () => {
     if (!selectedPatientId || !appointmentDate || !startTime || !endTime) {
-      alert('Please fill in required fields: Patient, Date, Start Time, and End Time');
+      toast.error('Please fill in required fields: Patient, Date, Start Time, and End Time');
       return;
     }
 
     if (startTime >= endTime) {
-      alert('End time must be after start time');
+      toast.error('End time must be after start time');
       return;
     }
 
@@ -81,9 +82,9 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
 
       let savedAppointment: Appointment;
 
-      if (existingAppointment) {
+      if (existingAppointment?.id) {
         // Update existing appointment
-        await db.appointments.update(existingAppointment.id!, appointmentData);
+        await db.appointments.update(existingAppointment.id, appointmentData);
         savedAppointment = { ...existingAppointment, ...appointmentData } as Appointment;
       } else {
         // Create new appointment
@@ -123,7 +124,7 @@ export function AppointmentForm({ onSave, onCancel, existingAppointment }: Appoi
       onSave(savedAppointment);
     } catch (error) {
       console.error('Error saving appointment:', error);
-      alert('Error saving appointment. Please try again.');
+      toast.error('Error saving appointment. Please try again.');
     } finally {
       setIsSaving(false);
     }
