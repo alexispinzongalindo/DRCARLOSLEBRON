@@ -19,7 +19,7 @@ import { StaffList } from './components/staff/StaffList';
 import { StaffDetail } from './components/staff/StaffDetail';
 import { PayrollList } from './components/payroll/PayrollList';
 import { PayrollDetail } from './components/payroll/PayrollDetail';
-import { seedDemoData, cleanDemoData } from './db/seedDemo';
+import { seedDemoData } from './db/seedDemo';
 import { Training } from './components/training/Training';
 import type { Patient, Appointment } from './db/dexie';
 
@@ -41,7 +41,6 @@ function App() {
         }
 
         await db.open();
-        await cleanDemoData();
         await seedDemoData();
         await useAuthStore.getState().checkSession();
         setIsInitialized(true);

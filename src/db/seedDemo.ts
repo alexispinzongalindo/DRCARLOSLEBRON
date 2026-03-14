@@ -1,29 +1,13 @@
 import { db } from './dexie';
 
-// Remove any fake demo patients/appointments/encounters from prior installs
-export async function cleanDemoData() {
-  const demoPatientIds = [
-    'demo-patient-1', 'demo-patient-2', 'demo-patient-3',
-    'demo-patient-4', 'demo-patient-5'
-  ];
-  const demoAptIds = [
-    'demo-apt-1', 'demo-apt-2', 'demo-apt-3', 'demo-apt-4', 'demo-apt-5'
-  ];
-  const demoEncIds = ['demo-enc-1', 'demo-enc-2'];
-
-  await Promise.all([
-    db.patients.bulkDelete(demoPatientIds),
-    db.appointments.bulkDelete(demoAptIds),
-    db.encounters.bulkDelete(demoEncIds),
-  ]);
-}
-
 export async function seedDemoData() {
-  // Check if staff already seeded
+  // Check if demo data already exists
   const staffCount = await db.staff.count();
   if (staffCount > 0) return;
 
-  // Seed real staff accounts
+  const today = new Date().toISOString().split('T')[0];
+
+  // Seed staff
   await db.staff.bulkAdd([
     {
       id: 'demo-admin',
@@ -58,6 +42,156 @@ export async function seedDemoData() {
       email: 'ana@optimumtherapy.pr',
       color_code: '#F59E0B',
       is_active: true,
+      sync_status: 'synced'
+    }
+  ]);
+
+  // Seed patients
+  await db.patients.bulkAdd([
+    {
+      id: 'demo-patient-1',
+      mrn: 'OT-2024-001',
+      first_name: 'Alexis',
+      last_name: 'Pinzon-Galindo',
+      dob: '1985-03-15',
+      sex: 'M',
+      phone: '787-555-0101',
+      email: 'alexis@email.com',
+      address: '123 Calle Principal, Aguadilla PR 00603',
+      is_deleted: false,
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-patient-2',
+      mrn: 'OT-2024-002',
+      first_name: 'Carmen',
+      last_name: 'Rivera-Santos',
+      dob: '1972-08-22',
+      sex: 'F',
+      phone: '787-555-0102',
+      email: 'carmen@email.com',
+      address: '456 Ave Libertad, Aguadilla PR 00603',
+      is_deleted: false,
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-patient-3',
+      mrn: 'OT-2024-003',
+      first_name: 'Roberto',
+      last_name: 'Gonzalez',
+      dob: '1960-11-05',
+      sex: 'M',
+      phone: '787-555-0103',
+      email: 'roberto@email.com',
+      address: '789 Calle Sol, Isabela PR 00662',
+      is_deleted: false,
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-patient-4',
+      mrn: 'OT-2024-004',
+      first_name: 'Luisa',
+      last_name: 'Morales-Diaz',
+      dob: '1990-01-30',
+      sex: 'F',
+      phone: '787-555-0104',
+      email: 'luisa@email.com',
+      address: '321 Calle Marina, Rincon PR 00677',
+      is_deleted: false,
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-patient-5',
+      mrn: 'OT-2024-005',
+      first_name: 'Jorge',
+      last_name: 'Torres-Vega',
+      dob: '1955-06-18',
+      sex: 'M',
+      phone: '787-555-0105',
+      email: 'jorge@email.com',
+      address: '654 Ave Borinquen, Mayaguez PR 00680',
+      is_deleted: false,
+      sync_status: 'synced'
+    }
+  ]);
+
+  // Seed appointments for today
+  await db.appointments.bulkAdd([
+    {
+      id: 'demo-apt-1',
+      patient_id: 'demo-patient-1',
+      staff_id: 'demo-admin',
+      appointment_date: today,
+      start_time: '09:00',
+      end_time: '10:00',
+      type: 'PT Evaluation',
+      status: 'confirmed',
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-apt-2',
+      patient_id: 'demo-patient-2',
+      staff_id: 'demo-admin',
+      appointment_date: today,
+      start_time: '10:00',
+      end_time: '10:45',
+      type: 'PT Follow-up',
+      status: 'scheduled',
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-apt-3',
+      patient_id: 'demo-patient-3',
+      staff_id: 'demo-therapist',
+      appointment_date: today,
+      start_time: '11:00',
+      end_time: '12:00',
+      type: 'PT Re-evaluation',
+      status: 'scheduled',
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-apt-4',
+      patient_id: 'demo-patient-4',
+      staff_id: 'demo-admin',
+      appointment_date: today,
+      start_time: '13:00',
+      end_time: '14:00',
+      type: 'PT Follow-up',
+      status: 'scheduled',
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-apt-5',
+      patient_id: 'demo-patient-5',
+      staff_id: 'demo-therapist',
+      appointment_date: today,
+      start_time: '14:00',
+      end_time: '15:00',
+      type: 'PT Evaluation',
+      status: 'confirmed',
+      sync_status: 'synced'
+    }
+  ]);
+
+  // Seed encounters
+  await db.encounters.bulkAdd([
+    {
+      id: 'demo-enc-1',
+      patient_id: 'demo-patient-1',
+      encounter_date: today,
+      encounter_type: 'PT Evaluation',
+      seen_by: 'demo-admin',
+      status: 'draft',
+      sync_status: 'synced'
+    },
+    {
+      id: 'demo-enc-2',
+      patient_id: 'demo-patient-3',
+      encounter_date: today,
+      encounter_type: 'PT Re-evaluation',
+      seen_by: 'demo-therapist',
+      status: 'draft',
       sync_status: 'synced'
     }
   ]);
@@ -101,4 +235,5 @@ export async function seedDemoData() {
     { id: 'ins-6', payer_name: 'Self Pay', payer_id: 'SELF' }
   ]);
 
+  console.log('Demo data seeded successfully');
 }
