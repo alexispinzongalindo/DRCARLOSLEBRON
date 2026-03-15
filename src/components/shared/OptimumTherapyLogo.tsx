@@ -18,7 +18,7 @@ export function OptimumTherapyLogo({ className = '', size = 'md' }: OptimumThera
       src={logoImage}
       alt="Optimum Therapy"
       className={className}
-      style={{ height: `${sizeMap[size].height}px`, width: 'auto', objectFit: 'contain', maxWidth: '100%', filter: 'saturate(1.6) contrast(1.15) brightness(1.05)' }}
+      style={{ height: `${sizeMap[size].height}px`, width: 'auto', objectFit: 'contain', maxWidth: '100%' }}
     />
   );
 }
